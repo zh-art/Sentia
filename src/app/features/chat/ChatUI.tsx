@@ -14,6 +14,7 @@ export default function ChatUI() {
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, text: "¡Hola! ¿En qué puedo ayudarte hoy?", sender: "bot" },
   ]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const sendMessage = async (message: string) => {
     if (!message.trim()) return;
@@ -25,14 +26,37 @@ export default function ChatUI() {
     };
     setMessages((prev) => [...prev, newMessage]);
 
-    setTimeout(() => {
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(
+        `https://free-unoficial-gpt4o-mini-api-g70n.onrender.com/chat/?query=${message}`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+
       const botResponse: Message = {
         id: Date.now(),
-        text: "Estoy aquí para escucharte 😊",
+        text: data.results || "No response from the API",
         sender: "bot",
       };
       setMessages((prev) => [...prev, botResponse]);
-    }, 1000);
+    } catch (error) {
+      console.log(error);
+      const botResponse: Message = {
+        id: Date.now(),
+        text: "Failed to fetch API",
+        sender: "bot",
+      };
+      setMessages((prev) => [...prev, botResponse]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -45,6 +69,7 @@ export default function ChatUI() {
         {messages.map((msg) => (
           <ChatMessage key={msg.id} text={msg.text} sender={msg.sender} />
         ))}
+        {isLoading && <ChatMessage text="Typing..." sender="bot" />}
       </div>
 
       <InputBox onSendMessage={sendMessage} />
