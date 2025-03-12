@@ -1,9 +1,5 @@
-import ChatUI from "@/app/features/chat/ChatUI";
+import Landing from "@/app/features/landing/Landing";
 
-export default function ChatPage() {
-  return (
-    <div className="flex h-screen w-full items-center justify-center bg-gray-100">
-      <ChatUI />
-    </div>
-  );
+export default function Home() {
+  return <Landing />;
 }

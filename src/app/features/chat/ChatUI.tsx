@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useUser } from "@auth0/nextjs-auth0/client";
+import { useSearchParams, useRouter } from "next/navigation";
 import ChatMessage from "./ChatMessage";
 import InputBox from "./InputBox";
 
@@ -11,9 +13,28 @@ interface Message {
 }
 
 export default function ChatUI() {
+  const { user } = useUser();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const isAnonymous = searchParams.get("anonymous") === "true";
+
+  useEffect(() => {
+    if (!user && !isAnonymous) {
+      router.push("/");
+    }
+  }, [user, isAnonymous, router]);
+
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "¡Hola! ¿En qué puedo ayudarte hoy?", sender: "bot" },
+    {
+      id: 1,
+      text: isAnonymous
+        ? "⚠️ Estás en modo anónimo. Tu historial de chat no se guardará."
+        : `¡Hola, ${user?.name || "usuario"}! ¿En qué puedo ayudarte hoy?`,
+      sender: "bot",
+    },
   ]);
+
   const [isLoading, setIsLoading] = useState(false);
 
   const sendMessage = async (message: string) => {
@@ -62,8 +83,14 @@ export default function ChatUI() {
   return (
     <div className="flex flex-col h-screen w-screen bg-gray-900 text-white">
       <header className="bg-gray-800 text-white text-center py-4 font-semibold text-lg shadow-md">
-        Sentia
+        Sentia {isAnonymous ? "(Modo Anónimo)" : "(Usuario Autenticado)"}
       </header>
+
+      {isAnonymous && (
+        <div className="bg-yellow-500 text-black text-center p-2">
+          ⚠️ Estás en modo anónimo. Tu historial de chat no se guardará.
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => (
