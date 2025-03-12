@@ -24,14 +24,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+<<<<<<< HEAD
     <html lang="en">
       <UserProvider>
+=======
+      <html lang="en">
+>>>>>>> 449cd71cf7834e6b3e64c2d7fc18a53c637a8a8d
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           {children}
         </body>
+<<<<<<< HEAD
       </UserProvider>
     </html>
+=======
+      </html>
+>>>>>>> 449cd71cf7834e6b3e64c2d7fc18a53c637a8a8d
   );
 }
