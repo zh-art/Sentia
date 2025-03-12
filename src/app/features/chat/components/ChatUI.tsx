@@ -39,11 +39,7 @@ export default function ChatUI() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-gray-900 text-white">
-      <header className="bg-gray-800 text-white text-center py-4 font-semibold text-lg shadow-md">
-        Sentia
-      </header>
-
+    <div className="flex flex-col h-full w-full bg-gray-900 text-white"> 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => (
           <ChatMessage key={msg.id} text={msg.text} sender={msg.sender} />
