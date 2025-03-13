@@ -1,15 +1,11 @@
 "use client";
-<<<<<<< HEAD:src/app/features/chat/ChatUI.tsx
 
 import { useState, useEffect } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useSearchParams, useRouter } from "next/navigation";
-=======
-import { useState } from "react";
->>>>>>> 449cd71cf7834e6b3e64c2d7fc18a53c637a8a8d:src/app/features/chat/components/ChatUI.tsx
 import ChatMessage from "./ChatMessage";
 import InputBox from "./InputBox";
-import { fetchChatResponse } from "../services/chatService";
+import LogoutButton from "@/app/features/auth/LogoutButton";
 
 interface Message {
   id: number;
@@ -54,20 +50,44 @@ export default function ChatUI() {
 
     setIsLoading(true);
 
-    const responseText = await fetchChatResponse(message);
-    const botResponse: Message = {
-      id: Date.now(),
-      text: responseText,
-      sender: "bot",
-    };
-    setMessages((prev) => [...prev, botResponse]);
-    setIsLoading(false);
+    try {
+      const response = await fetch(
+        `https://free-unoficial-gpt4o-mini-api-g70n.onrender.com/chat/?query=${message}`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+
+      const botResponse: Message = {
+        id: Date.now(),
+        text: data.results || "No response from the API",
+        sender: "bot",
+      };
+      setMessages((prev) => [...prev, botResponse]);
+    } catch (error) {
+      console.log(error);
+      const botResponse: Message = {
+        id: Date.now(),
+        text: "Failed to fetch API",
+        sender: "bot",
+      };
+      setMessages((prev) => [...prev, botResponse]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="flex flex-col h-screen w-screen bg-gray-900 text-white">
-      <header className="bg-gray-800 text-white text-center py-4 font-semibold text-lg shadow-md">
-        Sentia {isAnonymous ? "(Modo Anónimo)" : "(Usuario Autenticado)"}
+      <header className="bg-gray-800 text-white text-center py-4 font-semibold text-lg shadow-md flex justify-between px-4">
+        <span>
+          Sentia {isAnonymous ? "(Modo Anónimo)" : "(Usuario Autenticado)"}
+        </span>
+        {!isAnonymous && <LogoutButton />}
       </header>
 
       {isAnonymous && (
@@ -80,7 +100,7 @@ export default function ChatUI() {
         {messages.map((msg) => (
           <ChatMessage key={msg.id} text={msg.text} sender={msg.sender} />
         ))}
-        {isLoading && <ChatMessage text="Escribiendo..." sender="bot" />}
+        {isLoading && <ChatMessage text="Typing..." sender="bot" />}
       </div>
 
       <InputBox onSendMessage={sendMessage} />

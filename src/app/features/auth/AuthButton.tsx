@@ -1,18 +1,14 @@
 "use client";
-import { useUser } from "@auth0/nextjs-auth0/client";
+
 import Link from "next/link";
 
 export default function AuthButton() {
-  const { user, isLoading } = useUser();
-
-  if (isLoading) return <p>Cargando...</p>;
-
-  return user ? (
-    <div>
-      <p>Bienvenido, {user.name}!</p>
-      <Link href="/api/auth/logout">Cerrar sesión</Link>
-    </div>
-  ) : (
-    <Link href="/api/auth/login">Iniciar sesión</Link>
+  return (
+    <Link
+      href="/api/auth/login"
+      className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg block text-center"
+    >
+      Iniciar sesión
+    </Link>
   );
 }

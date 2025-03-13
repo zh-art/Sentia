@@ -2,9 +2,10 @@
 import { useEffect } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useRouter } from "next/navigation";
+import AuthButton from "@/app/features/auth/AuthButton";
 
 export default function Landing() {
-  const { user, isLoading } = useUser();
+  const { user } = useUser();
   const router = useRouter();
 
   useEffect(() => {
@@ -25,12 +26,7 @@ export default function Landing() {
       </div>
 
       <div className="mt-6 space-y-4">
-        <a
-          href="/api/auth/login"
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg block text-center"
-        >
-          Iniciar sesión
-        </a>
+        <AuthButton />
         <button
           onClick={() => router.push("/chat?anonymous=true")}
           className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg block w-full"
@@ -38,8 +34,6 @@ export default function Landing() {
           Usar de forma anónima
         </button>
       </div>
-
-      {isLoading && <p className="text-gray-400 mt-4">Cargando...</p>}
     </div>
   );
 }
