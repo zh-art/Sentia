@@ -30,17 +30,23 @@ export default function ChatUI() {
     {
       id: 1,
       text: isAnonymous
-        ? "⚠️ Estás en modo anónimo. Tu historial de chat no se guardará."
-        : `¡Hola, ${user?.name || "usuario"}! ¿En qué puedo ayudarte hoy?`,
+        ? "Te doy la bienvenida a Sentia, ¿Cómo te sientes?"
+        : `¡Hola, ${user?.name || "usuario"}! ¿Cómo te sientes?`,
       sender: "bot",
     },
   ]);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [hasSentMessage, setHasSentMessage] = useState(false);
 
   const sendMessage = async (message: string) => {
     if (!message.trim()) return;
 
+    if (!hasSentMessage) {
+      setHasSentMessage(true);
+    }
+    const prompt = "";
+    const formattedMessage = `${prompt}${message}`;
     const newMessage: Message = {
       id: Date.now(),
       text: message,
@@ -52,7 +58,7 @@ export default function ChatUI() {
 
     try {
       const response = await fetch(
-        `https://free-unoficial-gpt4o-mini-api-g70n.onrender.com/chat/?query=${message}`,
+        `https://free-unoficial-gpt4o-mini-api-g70n.onrender.com/chat/?query=${encodeURIComponent(formattedMessage)}`,
         {
           method: "GET",
           headers: {
@@ -91,7 +97,11 @@ export default function ChatUI() {
       </header>
 
       {isAnonymous && (
-        <div className="bg-yellow-500 text-black text-center p-2">
+        <div
+          className={`text-center p-2 transition-colors duration-500 ${
+            hasSentMessage ? "bg-gray-800 text-white" : "bg-yellow-500 text-black"
+          }`}
+        >
           ⚠️ Estás en modo anónimo. Tu historial de chat no se guardará.
         </div>
       )}
@@ -100,7 +110,7 @@ export default function ChatUI() {
         {messages.map((msg) => (
           <ChatMessage key={msg.id} text={msg.text} sender={msg.sender} />
         ))}
-        {isLoading && <ChatMessage text="Typing..." sender="bot" />}
+        {isLoading && <ChatMessage text="Escribiendo..." sender="bot" />}
       </div>
 
       <InputBox onSendMessage={sendMessage} />
