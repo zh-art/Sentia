@@ -58,24 +58,42 @@ export default function ChatUI() {
 
     try {
       const response = await fetch(
-        `https://free-unoficial-gpt4o-mini-api-g70n.onrender.com/chat/?query=${encodeURIComponent(formattedMessage)}`,
+        `/api/gemini`,
         {
-          method: "GET",
+          method: "POST",
           headers: {
-            accept: "application/json",
+            "Content-Type": "application/json",
           },
+          body: JSON.stringify({ prompt: formattedMessage }),
         }
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
       const data = await response.json();
 
-      const botResponse: Message = {
-        id: Date.now(),
-        text: data.results || "No response from the API",
-        sender: "bot",
-      };
-      setMessages((prev) => [...prev, botResponse]);
+      if (data.error) { 
+        console.error("Gemini API Error:", data.error);
+        const botResponse: Message = {
+          id: Date.now(),
+          text: `Error from Gemini API: ${data.error}`,
+          sender: "bot",
+        };
+        setMessages((prev) => [...prev, botResponse]);
+      } else {
+        const botResponse: Message = {
+          id: Date.now(),
+          text: data.result || "No response from the API",
+          sender: "bot",
+        };
+        setMessages((prev) => [...prev, botResponse]);
+      }
+
+
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching from Gemini API:", error);
       const botResponse: Message = {
         id: Date.now(),
         text: "Failed to fetch API",
