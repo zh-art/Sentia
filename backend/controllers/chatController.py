@@ -1,4 +1,5 @@
 from models.chats import ChatMessage;
+import datetime;
 from models.user import User;
 
 def save_chat_message(username: str, message: str, chat_room: str = "general"):
