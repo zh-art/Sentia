@@ -1,17 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { montserrat } from "@/app/styles/fonts";
 import "./styles/globals.css";
 import { UserProvider } from "@auth0/nextjs-auth0/client";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Sentia",
@@ -27,11 +17,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <UserProvider>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          {children}
-        </body>
+        <body className={`${montserrat.variable} antialiased`}>{children}</body>
       </UserProvider>
     </html>
   );

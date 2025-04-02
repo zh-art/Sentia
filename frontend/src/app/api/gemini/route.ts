@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const geminiResponse = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + GEMINI_API_KEY,
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" +
+        GEMINI_API_KEY,
       {
         method: "POST",
         headers: {
@@ -31,11 +32,21 @@ export async function POST(req: NextRequest) {
 
     const result = await geminiResponse.json();
 
-    const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text || "No se pudo obtener respuesta";
+    const textResponse =
+      result.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "No se pudo obtener respuesta";
 
     return NextResponse.json({ result: textResponse });
-  } catch (error: any) {
-    console.error("Error in Gemini handler:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error in Gemini handler:", error.message);
+    } else {
+      console.error("Unknown error in Gemini handler:", error);
+    }
+
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

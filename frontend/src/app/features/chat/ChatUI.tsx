@@ -58,7 +58,7 @@ export default function ChatUI() {
 
     try {
       const response = await fetch(
-        `/api/gemini`,
+        `/api/deepseek`,
         {
           method: "POST",
           headers: {
