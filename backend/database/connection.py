@@ -1,20 +1,23 @@
-import mongoengine as me
+from mongoengine import connect
 import os
 
-# Configuración de la conexión a MongoDB
-def connect_db():
-    DB_NAME = "chat_db"
-    MONGO_HOST = os.getenv("MONGO_HOST", "localhost")  # Usa la variable de entorno o localhost por defecto
-    MONGO_PORT = os.getenv("MONGO_PORT", "27017")
-    
-    # Construcción de la URI
-    mongo_uri = f"mongodb://{MONGO_HOST}:{MONGO_PORT}/{DB_NAME}"
+def init_db():
+    """
+    Configura la conexión a la base de datos MongoDB.
+    """
+    DB_NAME = os.getenv("MONGO_INITDB_DATABASE", "sentia_db")
+    DB_HOST = "mongodb"  # Nombre del servicio definido en docker-compose
+    DB_PORT = 27017  # Puerto interno de MongoDB en Docker
     
     try:
-        me.connect(DB_NAME, host=mongo_uri)
-        print(f"✅ Conectado a MongoDB en {mongo_uri}")
+        connect(
+            db=DB_NAME,
+            host=f"mongodb://{DB_HOST}:{DB_PORT}/{DB_NAME}",
+            alias="default"
+        )
+        print("✅ Conectado a MongoDB correctamente")
     except Exception as e:
         print(f"❌ Error al conectar con MongoDB: {e}")
 
-# Llamar a la función para conectar cuando se importe este archivo
-connect_db()
+# Ejecutar la conexión al importar el módulo
+init_db()

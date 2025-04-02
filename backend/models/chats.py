@@ -1,4 +1,5 @@
 import mongoengine as me
+from models.user import User
 import datetime
 
 class ChatMessage(me.Document):

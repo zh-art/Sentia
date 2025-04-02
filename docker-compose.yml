@@ -14,3 +14,12 @@ services:
     restart: always
     environment:
       - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_container
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=sentia_db
