@@ -1,0 +1,10 @@
+# Entorno virtual
+venv/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Variables de entorno y archivos locales
+.env
+*.log
