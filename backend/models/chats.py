@@ -1,12 +1,14 @@
-import mongoengine as me
-from models.user import User
-import datetime
+from pydantic import BaseModel
+from datetime import datetime
+from typing import Optional
 
-class ChatMessage(me.Document):
-    user = me.ReferenceField(User, required=True)  # Relación con el usuario
-    message = me.StringField(required=True)
-    timestamp = me.DateTimeField(default=datetime.datetime.utcnow)
-    chat_room = me.StringField(default="general")  # Nombre de la sala
+class ChatEntrada(BaseModel):
+    user_id: str
+    message: str
+    response: str
 
-    def __str__(self):
-        return f'[{self.timestamp}] {self.user.username}: {self.message}'
+class ChatGuardado(BaseModel):
+    user_id: str
+    message: str
+    response: str
+    timestamp: Optional[datetime]

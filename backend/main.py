@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from transformers import pipeline
 from fastapi.middleware.cors import CORSMiddleware
+from models.chat_model import ChatEntrada
+from services.chat_service import guardar_chat, obtener_historial
 
 # Inicializar FastAPI
 app = FastAPI()
@@ -26,3 +28,11 @@ class UserMessage(BaseModel):
 def generate_response(user_input: UserMessage):
     output = pipe(user_input.message, max_new_tokens=100, temperature=0.7)
     return {"response": output[0]["generated_text"]}
+
+@app.post("/guardar-chat")
+def guardar(chat: ChatEntrada):
+    return guardar_chat(chat)
+
+@app.get("/historial/{user_id}")
+def historial(user_id: str):
+    return obtener_historial(user_id)
