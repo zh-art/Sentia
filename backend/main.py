@@ -9,6 +9,8 @@ from database import get_db
 from models.chat import Chat
 from database import SessionLocal
 from models.message import Message
+from models.chat_model import ChatEntrada
+from services.chat_service import guardar_chat, obtener_historial
 
 # Inicializar FastAPI
 app = FastAPI()
