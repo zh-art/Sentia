@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import ChatMessage from "./ChatMessage";
 import InputBox from "./InputBox";
 import LogoutButton from "@/app/features/auth/LogoutButton";
+import ChatTimerSelector from "@/components/ChatTimerSelector";
 
 interface Message {
   id: number;
@@ -26,6 +27,8 @@ export default function ChatUI() {
     }
   }, [user, isAnonymous, router]);
 
+  const chatId = isAnonymous ? `anon-${Date.now()}` : user?.sub || "default-user";
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -38,6 +41,25 @@ export default function ChatUI() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [hasSentMessage, setHasSentMessage] = useState(false);
+  const [chatTimer, setChatTimer] = useState<number>(24 * 60); // Por defecto 24 horas (en minutos)
+
+  useEffect(() => {
+    if (chatTimer > 0 && messages.length > 1) {
+      const timer = setTimeout(() => {
+        setMessages([
+          {
+            id: 1,
+            text: isAnonymous
+              ? "Te doy la bienvenida a Sentia, ¿Cómo te sientes?"
+              : `¡Hola, ${user?.name || "usuario"}! ¿Cómo te sientes?`,
+            sender: "bot",
+          },
+        ]);
+      }, chatTimer * 60 * 1000); // minutos → milisegundos
+
+      return () => clearTimeout(timer);
+    }
+  }, [chatTimer, messages]);
 
   const sendMessage = async (message: string) => {
     if (!message.trim()) return;
@@ -45,28 +67,25 @@ export default function ChatUI() {
     if (!hasSentMessage) {
       setHasSentMessage(true);
     }
+
     const prompt = "Asumirás el rol de un acompañante emocional, con conocimientos generales sobre salud mental, pero siempre dejando claro que no eres un profesional humano. Tu función es brindar contención emocional, escuchar activamente y ayudar al usuario a explorar sus pensamientos o emociones. Si el mensaje difiere completamente de temas que estén relacionados con la salud mental y emocional (como problemas de matemáticas, programación u otros temas), respóndelo igualmente y pregunta si ese tema es la causa del sentimiento. Si detectas emociones fuertes o situaciones delicadas (como ideación suicida, abuso o autolesiones), responde con cuidado y empatía, pero recuerda tus limitaciones. Nunca simules ser un psicólogo ni indiques que puedes diagnosticar o tratar. Si notas que el usuario podría necesitar una atención más especializada, escribe la palabra clave 'AOE' al inicio del mensaje, lo que redigirá automáticamente la conversación a un profesional capacitado. No utilices estilos de letra ni listas; responde en párrafos planos y cálidos. Siempre recuerda al usuario que puedes equivocarte o no entender del todo, porque eres una inteligencia artificial y no un terapeuta real. A continuación, responde al mensaje del usuario teniendo en cuenta lo anterior: ";
+    
     const formattedMessage = `${prompt} ${message}`;
+
     const newMessage: Message = {
       id: Date.now(),
       text: message,
       sender: "user",
     };
     setMessages((prev) => [...prev, newMessage]);
-
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        `/api/deepseek`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ prompt: formattedMessage }),
-        }
-      );
+      const response = await fetch(`/api/deepseek`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: formattedMessage }),
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -74,32 +93,21 @@ export default function ChatUI() {
 
       const data = await response.json();
 
-      if (data.error) { 
-        console.error("Gemini API Error:", data.error);
-        const botResponse: Message = {
-          id: Date.now(),
-          text: `Error from Gemini API: ${data.error}`,
-          sender: "bot",
-        };
-        setMessages((prev) => [...prev, botResponse]);
-      } else {
-        const botResponse: Message = {
-          id: Date.now(),
-          text: data.result || "No response from the API",
-          sender: "bot",
-        };
-        setMessages((prev) => [...prev, botResponse]);
-      }
+      const botResponse: Message = {
+        id: Date.now(),
+        text: data.result || "No response from the API",
+        sender: "bot",
+      };
 
-
+      setMessages((prev) => [...prev, botResponse]);
     } catch (error) {
       console.error("Error fetching from Gemini API:", error);
-      const botResponse: Message = {
+      const errorMessage: Message = {
         id: Date.now(),
         text: "Failed to fetch API",
         sender: "bot",
       };
-      setMessages((prev) => [...prev, botResponse]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -113,6 +121,15 @@ export default function ChatUI() {
         </span>
         {!isAnonymous && <LogoutButton />}
       </header>
+
+      {/* Selector del temporizador */}
+      <div className="p-4">
+        <ChatTimerSelector
+          chatId={chatId}
+          currentTimer={chatTimer}
+          onChangeTimer={setChatTimer}
+        />
+      </div>
 
       {isAnonymous && (
         <div
