@@ -11,7 +11,7 @@ import ChatTimerSelector from "@/components/ChatTimerSelector";
 interface Message {
   id: number;
   text: string;
-  sender: "bot" | "user";
+  sender: "bot" | "user" | "system" | "error";
 }
 
 export default function ChatUI() {
@@ -61,55 +61,64 @@ export default function ChatUI() {
     }
   }, [chatTimer, messages]);
 
-  const sendMessage = async (message: string) => {
+  const sendMessage = async (message: string, sender: "bot" | "user" | "system" | "error" = "user") => {
     if (!message.trim()) return;
-
-    if (!hasSentMessage) {
-      setHasSentMessage(true);
-    }
-
-    const prompt = "Asumirás el rol de un acompañante emocional, con conocimientos generales sobre salud mental, pero siempre dejando claro que no eres un profesional humano. Tu función es brindar contención emocional, escuchar activamente y ayudar al usuario a explorar sus pensamientos o emociones. Si el mensaje difiere completamente de temas que estén relacionados con la salud mental y emocional (como problemas de matemáticas, programación u otros temas), respóndelo igualmente y pregunta si ese tema es la causa del sentimiento. Si detectas emociones fuertes o situaciones delicadas (como ideación suicida, abuso o autolesiones), responde con cuidado y empatía, pero recuerda tus limitaciones. Nunca simules ser un psicólogo ni indiques que puedes diagnosticar o tratar. Si notas que el usuario podría necesitar una atención más especializada, escribe la palabra clave 'AOE' al inicio del mensaje, lo que redigirá automáticamente la conversación a un profesional capacitado. No utilices estilos de letra ni listas; responde en párrafos planos y cálidos. Siempre recuerda al usuario que puedes equivocarte o no entender del todo, porque eres una inteligencia artificial y no un terapeuta real. A continuación, responde al mensaje del usuario teniendo en cuenta lo anterior: ";
-    
-    const formattedMessage = `${prompt} ${message}`;
 
     const newMessage: Message = {
       id: Date.now(),
       text: message,
-      sender: "user",
+      sender,
     };
+
     setMessages((prev) => [...prev, newMessage]);
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(`/api/deepseek`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: formattedMessage }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+    if (sender === "user") {
+      if (!hasSentMessage) {
+        setHasSentMessage(true);
       }
 
-      const data = await response.json();
+      const prompt = "Asumirás el rol de un acompañante emocional, con conocimientos generales sobre salud mental, pero siempre dejando claro que no eres un profesional humano. Tu función es brindar contención emocional, escuchar activamente y ayudar al usuario a explorar sus pensamientos o emociones. Si el mensaje difiere completamente de temas que estén relacionados con la salud mental y emocional (como problemas de matemáticas, programación u otros temas), respóndelo igualmente y pregunta si ese tema es la causa del sentimiento. Si detectas emociones fuertes o situaciones delicadas (como ideación suicida, abuso o autolesiones), responde con cuidado y empatía, pero recuerda tus limitaciones. Nunca simules ser un psicólogo ni indiques que puedes diagnosticar o tratar. Si notas que el usuario podría necesitar una atención más especializada, escribe la palabra clave 'AOE' al inicio del mensaje, lo que redigirá automáticamente la conversación a un profesional capacitado. No utilices estilos de letra ni listas; responde en párrafos planos y cálidos. Siempre recuerda al usuario que puedes equivocarte o no entender del todo, porque eres una inteligencia artificial y no un terapeuta real. A continuación, responde al mensaje del usuario teniendo en cuenta lo anterior: ";
 
-      const botResponse: Message = {
-        id: Date.now(),
-        text: data.result || "No response from the API",
-        sender: "bot",
-      };
+      const formattedMessage = `${prompt} ${message}`;
 
-      setMessages((prev) => [...prev, botResponse]);
-    } catch (error) {
-      console.error("Error fetching from Gemini API:", error);
-      const errorMessage: Message = {
+      const newMessage: Message = {
         id: Date.now(),
-        text: "Failed to fetch API",
-        sender: "bot",
+        text: message,
+        sender: "user",
       };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
+      setMessages((prev) => [...prev, newMessage]);
+      setIsLoading(true);
+
+      try {
+        const response = await fetch(`/api/deepseek`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: formattedMessage }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        const botResponse: Message = {
+          id: Date.now(),
+          text: data.result || "No response from the API",
+          sender: "bot",
+        };
+
+        setMessages((prev) => [...prev, botResponse]);
+      } catch (error) {
+        console.error("Error fetching from Gemini API:", error);
+        const errorMessage: Message = {
+          id: Date.now(),
+          text: "Failed to fetch API",
+          sender: "bot",
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -128,14 +137,15 @@ export default function ChatUI() {
           chatId={chatId}
           currentTimer={chatTimer}
           onChangeTimer={setChatTimer}
+          onSendMessage={sendMessage}
         />
+
       </div>
 
       {isAnonymous && (
         <div
-          className={`text-center p-2 transition-colors duration-500 ${
-            hasSentMessage ? "bg-gray-800 text-white" : "bg-yellow-500 text-black"
-          }`}
+          className={`text-center p-2 transition-colors duration-500 ${hasSentMessage ? "bg-gray-800 text-white" : "bg-yellow-500 text-black"
+            }`}
         >
           ⚠️ Estás en modo anónimo. Tu historial de chat no se guardará.
         </div>

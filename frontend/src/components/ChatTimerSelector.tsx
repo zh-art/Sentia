@@ -7,12 +7,14 @@ interface ChatTimerSelectorProps {
   chatId: string;
   currentTimer: number;
   onChangeTimer: (newTimer: number) => void;
+  onSendMessage: (message: string, sender?: "bot" | "user" | "system" | "error") => void;
 }
 
 export default function ChatTimerSelector({
   chatId,
   currentTimer,
   onChangeTimer,
+  onSendMessage
 }: ChatTimerSelectorProps) {
   const [timer, setTimer] = useState<number>(currentTimer);
 
@@ -23,16 +25,25 @@ export default function ChatTimerSelector({
   const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newTimer = parseInt(e.target.value, 10);
     setTimer(newTimer);
-    onChangeTimer(newTimer); // Notifica al componente padre
-
+    onChangeTimer(newTimer);
+    const readableTimer =
+      newTimer === 0 ? "desactivado" :
+      newTimer === 5 ? "5 minutos" :
+      newTimer === 1440 ? "24 horas" :
+      newTimer === 10080 ? "7 días" :
+      newTimer === 129600 ? "90 días" : `${newTimer} minutos`;
+    onSendMessage(`Temporizador de eliminación de mensajes ${newTimer === 0 ? 'desactivado' : `establecido a ${readableTimer}`}.`, "system");
+  
     try {
-      await axios.post("/api/chat/timer", {
-        chatId,
-        timer_duration: newTimer,
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+      await axios.put(`${backendUrl}/chat/${chatId}/timer`, {
+        duration: newTimer
       });
       console.log("Temporizador actualizado correctamente.");
     } catch (error) {
       console.error("Error al actualizar el temporizador:", error);
+      // Mostrar mensaje de error en el chat
+      onSendMessage("Hubo un problema al guardar el temporizador en el servidor. El cambio podría no ser persistente.", "error");
     }
   };
 
