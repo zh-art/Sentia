@@ -1,94 +1,124 @@
-from datetime import datetime, timedelta
-from fastapi import FastAPI, APIRouter, HTTPException
-from pydantic import BaseModel
-from transformers import pipeline
+from fastapi import FastAPI, HTTPException, Query, Path, Body
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime
-from sqlalchemy import Column, Integer, Boolean, DateTime
-from database import get_db
-from models.chats import Chat
-from database import SessionLocal
-from models.message import Message
-from models.chats import ChatEntrada
+from pydantic import BaseModel
+from datetime import datetime, timedelta
+from transformers import pipeline
 from services.chat_service import guardar_chat, obtener_historial
+from services.user_service import usuario_existe
+from database.mongo_client import chat_collection
+from models.chats import ChatEntrada, ChatGuardado
+from bson.objectid import ObjectId
 
-# Inicializar FastAPI
 app = FastAPI()
 
-# Permitir conexión desde Next.js (localhost:3000)
+# Middleware CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción: especifica tu dominio
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Cargar modelo de Hugging Face
+# HuggingFace
 pipe = pipeline("text-generation", model="deepseek-ai/DeepSeek-V3-0324", trust_remote_code=True)
 
-# Esquema del cuerpo de solicitud
+# Alternativa con CPU (No sirve) pipe = pipeline("text-generation", model="distilgpt2")
+
+# Modelo para entrada de usuario
 class UserMessage(BaseModel):
+    user_id: str
     message: str
 
+# Modelo para configuración de temporizador
+class TimerUpdate(BaseModel):
+    user_id: str
+    duration_minutes: int  # duración en minutos (0 para desactivar)
+
+# Endpoint para generar respuesta
 @app.post("/generate")
-def generate_response(user_input: UserMessage):
-    output = pipe(user_input.message, max_new_tokens=100, temperature=0.7)
-    return {"response": output[0]["generated_text"]}
+def generate_response(data: UserMessage):
+    print("[POST /generate] Solicitud recibida:", data.dict())
 
-class Chat(BaseModel):
-    __tablename__ = "chats"
+    if not usuario_existe(data.user_id):
+        print("Usuario no registrado:", data.user_id)
+        raise HTTPException(status_code=404, detail="Usuario no registrado")
 
-    id = Column(Integer, primary_key=True)
-    # ... otros campos
+    try:
+        print("Generando respuesta con HuggingFace...")
+        output = pipe(data.message, max_new_tokens=100, temperature=0.7)
+        respuesta = output[0]["generated_text"]
+        print("Respuesta generada:", respuesta)
 
-    timer_enabled = Column(Boolean, default=False)
-    timer_duration = Column(Integer, nullable=True)  # segundos
-    timer_activated_at = Column(DateTime, nullable=True)
+        guardar_chat(ChatEntrada(
+            user_id=data.user_id,
+            message=data.message,
+            response=respuesta
+        ))
 
-router = APIRouter()
-
-@router.put("/chat/{chat_id}/timer")
-def set_timer(chat_id: int, duration: int, db=Depends(get_db)):
-    chat = db.query(Chat).filter(Chat.id == chat_id).first()
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
-
-    if duration == 0:
-        chat.timer_enabled = False
-        chat.timer_duration = None
-        chat.timer_activated_at = None
-    else:
-        chat.timer_enabled = True
-        chat.timer_duration = duration
-        chat.timer_activated_at = datetime.utcnow()
-
-    db.commit()
-    return {"message": "Timer updated"}
+        return {"response": respuesta}
+    except Exception as e:
+        print("Error generando respuesta:", str(e))
+        raise HTTPException(status_code=500, detail="Error interno al generar respuesta.")
 
 
-def delete_expired_messages():
-    db = SessionLocal()
+# Endpoint para consultar historial
+@app.get("/historial/{user_id}")
+def historial(user_id: str):
+    return obtener_historial(user_id)
+
+# Endpoint para configurar temporizador
+@app.put("/chat/{chat_id}/timer")
+def set_timer(chat_id: str = Path(...), duration: int = Body(...)):
+    try:
+        # Guardar configuración del temporizador
+        chat_collection.update_many(
+            {"user_id": chat_id},
+            {
+                "$set": {
+                    "timer_enabled": duration > 0,
+                    "timer_duration": duration * 60,
+                    "timer_activated_at": datetime.utcnow()
+                }
+            }
+        )
+
+        if duration == 0:
+            return {"message": "Temporizador desactivado. No se eliminaron mensajes."}
+
+        # Calcular umbral para mensajes a eliminar
+        threshold = datetime.utcnow() - timedelta(minutes=duration)
+
+        result = chat_collection.delete_many({
+            "user_id": chat_id,
+            "timestamp": {"$lt": threshold}
+        })
+
+        return {
+            "message": f"Temporizador actualizado. {result.deleted_count} mensaje(s) antiguos eliminados.",
+            "deleted": result.deleted_count
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Endpoint manual para eliminar mensajes expirados
+@app.delete("/eliminar-expirados")
+def eliminar_mensajes_expirados():
     now = datetime.utcnow()
-    chats = db.query(Chat).filter(Chat.timer_enabled == True).all()
+    total_eliminados = 0
 
+    chats = chat_collection.find({"timer_enabled": True})
     for chat in chats:
-        if not chat.timer_activated_at:
+        activated_at = chat.get("timer_activated_at")
+        duration = chat.get("timer_duration")
+
+        if not activated_at or not duration:
             continue
 
-        threshold = now - timedelta(seconds=chat.timer_duration)
-        expired_messages = db.query(Message).filter(
-            Message.chat_id == chat.id,
-            Message.created_at >= chat.timer_activated_at,
-            Message.created_at <= threshold
-        ).all()
+        umbral = activated_at + timedelta(seconds=duration)
+        if now >= umbral:
+            result = chat_collection.delete_one({"_id": ObjectId(chat["_id"])})
+            total_eliminados += result.deleted_count
 
-        for msg in expired_messages:
-            db.delete(msg)
-
-    db.commit()
-    db.close()
-
-
-
-
+    return {"message": f"{total_eliminados} mensaje(s) eliminados por expiración"}

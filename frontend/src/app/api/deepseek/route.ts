@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const { prompt } = await req.json();
+  console.log("Llamada recibida en /api/deepseek");
+  const body = await req.json();
+  console.log("Payload recibido: ", body);
+  const {user_id, message} = body;
 
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/generate`, {
+    const response = await fetch(`http://localhost:8000/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: prompt }),
+      body: JSON.stringify({ user_id, message }),
     });
 
     const data = await response.json();
+    console.log("Respuesta desde FastAPI:",data)
 
     return NextResponse.json({ result: data.response });
   } catch (error) {

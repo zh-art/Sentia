@@ -64,13 +64,6 @@ export default function ChatUI() {
   const sendMessage = async (message: string, sender: "bot" | "user" | "system" | "error" = "user") => {
     if (!message.trim()) return;
 
-    const newMessage: Message = {
-      id: Date.now(),
-      text: message,
-      sender,
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
     if (sender === "user") {
       if (!hasSentMessage) {
         setHasSentMessage(true);
@@ -147,7 +140,7 @@ export default function ChatUI() {
           className={`text-center p-2 transition-colors duration-500 ${hasSentMessage ? "bg-gray-800 text-white" : "bg-yellow-500 text-black"
             }`}
         >
-          ⚠️ Estás en modo anónimo. Tu historial de chat no se guardará.
+          ⚠️ Estás en modo anónimo. Tu historial de chat no se guardará. ⚠️
         </div>
       )}
 
