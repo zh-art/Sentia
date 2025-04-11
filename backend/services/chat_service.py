@@ -1,7 +1,7 @@
-from db.mongo_client import chat_collection
+from database.mongo_client import chat_collection
 from datetime import datetime
 from services.user_service import usuario_existe
-from models.chat_model import ChatEntrada, ChatGuardado
+from models.chats import ChatEntrada, ChatGuardado
 
 def guardar_chat(chat: ChatEntrada):
     if not usuario_existe(chat.user_id):
