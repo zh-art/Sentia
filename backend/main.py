@@ -6,10 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from sqlalchemy import Column, Integer, Boolean, DateTime
 from database import get_db
-from models.chat import Chat
+from models.chats import Chat
 from database import SessionLocal
 from models.message import Message
-from models.chat_model import ChatEntrada
+from models.chats import ChatEntrada
 from services.chat_service import guardar_chat, obtener_historial
 
 # Inicializar FastAPI
@@ -36,7 +36,7 @@ def generate_response(user_input: UserMessage):
     output = pipe(user_input.message, max_new_tokens=100, temperature=0.7)
     return {"response": output[0]["generated_text"]}
 
-class Chat(Base):
+class Chat(BaseModel):
     __tablename__ = "chats"
 
     id = Column(Integer, primary_key=True)
