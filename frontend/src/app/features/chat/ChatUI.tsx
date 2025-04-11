@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import ChatMessage from "./ChatMessage";
 import InputBox from "./InputBox";
 import LogoutButton from "@/app/features/auth/LogoutButton";
-import ChatTimerSelector from "@/components/ChatTimerSelector";
+import ChatTimerSelector from "@/app/features/chat/ChatTimerSelector";
 
 interface Message {
   id: number;
@@ -27,7 +27,9 @@ export default function ChatUI() {
     }
   }, [user, isAnonymous, router]);
 
-  const chatId = isAnonymous ? `anon-${Date.now()}` : user?.sub || "default-user";
+  const chatId = isAnonymous
+    ? `anon-${Date.now()}`
+    : user?.sub || "default-user";
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -41,7 +43,7 @@ export default function ChatUI() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [hasSentMessage, setHasSentMessage] = useState(false);
-  const [chatTimer, setChatTimer] = useState<number>(24 * 60); // Por defecto 24 horas (en minutos)
+  const [chatTimer, setChatTimer] = useState<number>(24 * 60); 
 
   useEffect(() => {
     if (chatTimer > 0 && messages.length > 1) {
@@ -55,7 +57,7 @@ export default function ChatUI() {
             sender: "bot",
           },
         ]);
-      }, chatTimer * 60 * 1000); // minutos → milisegundos
+      }, chatTimer * 60 * 1000); 
 
       return () => clearTimeout(timer);
     }
@@ -69,9 +71,10 @@ export default function ChatUI() {
         setHasSentMessage(true);
       }
 
-      const prompt = "Asumirás el rol de un acompañante emocional, con conocimientos generales sobre salud mental, pero siempre dejando claro que no eres un profesional humano. Tu función es brindar contención emocional, escuchar activamente y ayudar al usuario a explorar sus pensamientos o emociones. Si el mensaje difiere completamente de temas que estén relacionados con la salud mental y emocional (como problemas de matemáticas, programación u otros temas), respóndelo igualmente y pregunta si ese tema es la causa del sentimiento. Si detectas emociones fuertes o situaciones delicadas (como ideación suicida, abuso o autolesiones), responde con cuidado y empatía, pero recuerda tus limitaciones. Nunca simules ser un psicólogo ni indiques que puedes diagnosticar o tratar. Si notas que el usuario podría necesitar una atención más especializada, escribe la palabra clave 'AOE' al inicio del mensaje, lo que redigirá automáticamente la conversación a un profesional capacitado. No utilices estilos de letra ni listas; responde en párrafos planos y cálidos. Siempre recuerda al usuario que puedes equivocarte o no entender del todo, porque eres una inteligencia artificial y no un terapeuta real. A continuación, responde al mensaje del usuario teniendo en cuenta lo anterior: ";
+    const prompt =
+      "Asumirás el rol de un acompañante emocional, con conocimientos generales sobre salud mental, pero siempre dejando claro que no eres un profesional humano. Tu función es brindar contención emocional, escuchar activamente y ayudar al usuario a explorar sus pensamientos o emociones. Si el mensaje difiere completamente de temas que estén relacionados con la salud mental y emocional (como problemas de matemáticas, programación u otros temas), respóndelo igualmente y pregunta si ese tema es la causa del sentimiento. Si detectas emociones fuertes o situaciones delicadas (como ideación suicida, abuso o autolesiones), responde con cuidado y empatía, pero recuerda tus limitaciones. Nunca simules ser un psicólogo ni indiques que puedes diagnosticar o tratar. Si notas que el usuario podría necesitar una atención más especializada, escribe la palabra clave 'AOE' al inicio del mensaje, lo que redigirá automáticamente la conversación a un profesional capacitado. No utilices estilos de letra ni listas; responde en párrafos planos y cálidos. Siempre recuerda al usuario que puedes equivocarte o no entender del todo, porque eres una inteligencia artificial y no un terapeuta real. A continuación, responde al mensaje del usuario teniendo en cuenta lo anterior: ";
 
-      const formattedMessage = `${prompt} ${message}`;
+    const formattedMessage = `${prompt} ${message}`;
 
       const newMessage: Message = {
         id: Date.now(),
@@ -130,15 +133,18 @@ export default function ChatUI() {
           chatId={chatId}
           currentTimer={chatTimer}
           onChangeTimer={setChatTimer}
-          onSendMessage={sendMessage}
+          // onSendMessage={sendMessage}
         />
 
       </div>
 
       {isAnonymous && (
         <div
-          className={`text-center p-2 transition-colors duration-500 ${hasSentMessage ? "bg-gray-800 text-white" : "bg-yellow-500 text-black"
-            }`}
+          className={`text-center p-2 transition-colors duration-500 ${
+            hasSentMessage
+              ? "bg-gray-800 text-white"
+              : "bg-yellow-500 text-black"
+          }`}
         >
           ⚠️ Estás en modo anónimo. Tu historial de chat no se guardará. ⚠️
         </div>

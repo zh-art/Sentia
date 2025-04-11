@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { montserrat } from "@/app/styles/fonts";
 import "./styles/globals.css";
 import { UserProvider } from "@auth0/nextjs-auth0/client";
+// import Navbar from "@/app/features/navbar/Navbar";
 
 export const metadata: Metadata = {
   title: "Sentia",
@@ -17,7 +18,11 @@ export default function RootLayout({
   return (
     <html lang="es">
       <UserProvider>
-        <body className={`${montserrat.variable} antialiased`}>{children}</body>
+        <body className={`${montserrat.variable} antialiased`}>
+          {" "}
+          {/* <Navbar /> */}
+          {children}
+        </body>
       </UserProvider>
     </html>
   );

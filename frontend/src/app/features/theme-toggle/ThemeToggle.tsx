@@ -6,7 +6,6 @@ export default function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    // Revisa si hay preferencia previa
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
     if (savedTheme) {
       setTheme(savedTheme);
@@ -25,7 +24,7 @@ export default function ThemeToggle() {
     <button
       onClick={toggleTheme}
       aria-label="Cambiar tema"
-      className={`absolute top-4 right-4 p-2 rounded-full shadow-md hover:scale-110 transition-all duration-300
+      className={`absolute top-4 right-4 p-2 rounded-full shadow-md hover:scale-110 transition-all duration-300 cursor-pointer
         ${theme === "dark" ? "bg-white" : "bg-[#2d3145]"}`}
     >
       {theme === "light" ? (
