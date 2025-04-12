@@ -1,17 +1,19 @@
-from fastapi import FastAPI, HTTPException, Query, Path, Body
+from fastapi import FastAPI, HTTPException, Query, Path, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime, timedelta
-from transformers import pipeline
-from services.chat_service import guardar_chat, obtener_historial
-from services.user_service import usuario_existe
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from database.mongo_client import chat_collection
-from models.chats import ChatEntrada, ChatGuardado
+from services.chat_service import guardar_chat, obtener_historial
+from services.user_service import usuario_existe, crear_usuario_si_no_existe
+from models.chats import ChatEntrada
 from bson.objectid import ObjectId
+import torch
+import traceback
 
 app = FastAPI()
 
-# Middleware CORS
+# Configuración CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,58 +22,77 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# HuggingFace
-pipe = pipeline("text-generation", model="deepseek-ai/DeepSeek-V3-0324", trust_remote_code=True)
+# Carga de DialoGPT-Medium de HuggingFace
+tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-medium")
+model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-medium")
 
-# Alternativa con CPU (No sirve) pipe = pipeline("text-generation", model="distilgpt2")
+# Nos aseguramos que todo vaya a CPU
+device = torch.device("cpu")
+model.to(device)
 
-# Modelo para entrada de usuario
-class UserMessage(BaseModel):
-    user_id: str
-    message: str
-
-# Modelo para configuración de temporizador
+# Modelo para actualización de temporizador
 class TimerUpdate(BaseModel):
     user_id: str
-    duration_minutes: int  # duración en minutos (0 para desactivar)
+    duration_minutes: int
 
-# Endpoint para generar respuesta
+
 @app.post("/generate")
-def generate_response(data: UserMessage):
-    print("[POST /generate] Solicitud recibida:", data.dict())
+async def generate_response(request: Request):
+    data = await request.json()
+    print("[POST /generate] Body recibido:", data)
 
-    if not usuario_existe(data.user_id):
-        print("Usuario no registrado:", data.user_id)
-        raise HTTPException(status_code=404, detail="Usuario no registrado")
+    user_id = data.get("user_id")
+    message = data.get("message")
+
+    if not user_id or not message:
+        raise HTTPException(status_code=400, detail="Faltan campos requeridos: user_id y message")
+
+    crear_usuario_si_no_existe(user_id)
 
     try:
-        print("Generando respuesta con HuggingFace...")
-        output = pipe(data.message, max_new_tokens=100, temperature=0.7)
-        respuesta = output[0]["generated_text"]
+        print("Generando respuesta con DialoGPT...")
+
+        if len(message) > 200:
+            message = message[:200]
+
+        inputs = tokenizer.encode(message + tokenizer.eos_token, return_tensors="pt").to(device)
+
+        reply_ids = model.generate(
+            inputs,
+            max_new_tokens=100,
+            pad_token_id=tokenizer.eos_token_id,
+            temperature=0.7,
+            do_sample=True,
+            top_k=50,
+            top_p=0.95,
+        )
+
+        respuesta = tokenizer.decode(reply_ids[:, inputs.shape[-1]:][0], skip_special_tokens=True).strip()
+
         print("Respuesta generada:", respuesta)
 
         guardar_chat(ChatEntrada(
-            user_id=data.user_id,
-            message=data.message,
+            user_id=user_id,
+            message=message,
             response=respuesta
         ))
 
         return {"response": respuesta}
+
     except Exception as e:
         print("Error generando respuesta:", str(e))
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail="Error interno al generar respuesta.")
 
-
-# Endpoint para consultar historial
+# Obtener historial de usuario
 @app.get("/historial/{user_id}")
 def historial(user_id: str):
     return obtener_historial(user_id)
 
-# Endpoint para configurar temporizador
+# Actualizar temporizador de un chat
 @app.put("/chat/{chat_id}/timer")
 def set_timer(chat_id: str = Path(...), duration: int = Body(...)):
     try:
-        # Guardar configuración del temporizador
         chat_collection.update_many(
             {"user_id": chat_id},
             {
@@ -86,7 +107,6 @@ def set_timer(chat_id: str = Path(...), duration: int = Body(...)):
         if duration == 0:
             return {"message": "Temporizador desactivado. No se eliminaron mensajes."}
 
-        # Calcular umbral para mensajes a eliminar
         threshold = datetime.utcnow() - timedelta(minutes=duration)
 
         result = chat_collection.delete_many({
@@ -102,7 +122,7 @@ def set_timer(chat_id: str = Path(...), duration: int = Body(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Endpoint manual para eliminar mensajes expirados
+# Eliminar manualmente mensajes expirados
 @app.delete("/eliminar-expirados")
 def eliminar_mensajes_expirados():
     now = datetime.utcnow()
