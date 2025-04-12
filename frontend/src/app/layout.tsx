@@ -20,7 +20,7 @@ export default function RootLayout({
       <UserProvider>
         <body className={`${montserrat.variable} antialiased`}>
           {" "}
-          {/* <Navbar /> */}
+          {/* <Navbar />  */}
           {children}
         </body>
       </UserProvider>

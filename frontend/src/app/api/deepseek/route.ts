@@ -2,19 +2,38 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   console.log("Llamada recibida en /api/deepseek");
-  const body = await req.json();
-  console.log("Payload recibido: ", body);
-  const {user_id, message} = body;
+   const body = await req.json();
+   console.log("Payload recibido: ", body);
+
+   
+  const { user_id, prompt } = body;
+
+  const chatId = user_id || "default-user";
+
+
+  if (!prompt) {
+    return NextResponse.json(
+      { error: "No se recibió prompt válido" },
+      { status: 400 }
+    );
+  }
 
   try {
     const response = await fetch(`http://localhost:8000/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id, message }),
+      body: JSON.stringify({ 
+        user_id: chatId,  
+        message: prompt 
+      }),
     });
 
+    if (!response.ok) {
+      throw new Error(`FastAPI error: ${response.status}`);
+    }
+
     const data = await response.json();
-    console.log("Respuesta desde FastAPI:",data)
+    console.log("Respuesta desde FastAPI:", data);
 
     return NextResponse.json({ result: data.response });
   } catch (error) {
