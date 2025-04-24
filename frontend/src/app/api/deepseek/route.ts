@@ -6,10 +6,9 @@ export async function POST(req: NextRequest) {
    console.log("Payload recibido: ", body);
 
    
-  const { user_id, prompt } = body;
+  const { user_id, prompt, type } = body;
 
   const chatId = user_id || "default-user";
-
 
   if (!prompt) {
     return NextResponse.json(
@@ -19,12 +18,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const response = await fetch(`http://localhost:8000/generate`, {
+    const response = await fetch(`http://localhost:8000/chat/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        user_id: chatId,  
-        message: prompt 
+      body: JSON.stringify({
+        user_id: chatId,
+        message: prompt,
+        type: type,
       }),
     });
 

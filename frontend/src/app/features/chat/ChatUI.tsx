@@ -7,6 +7,7 @@ import ChatMessage from "./ChatMessage";
 import InputBox from "./InputBox";
 import LogoutButton from "@/app/features/auth/LogoutButton";
 import ChatTimerSelector from "@/app/features/chat/ChatTimerSelector";
+import { fetchChatHistory } from "./chatService";
 
 interface Message {
   id: number;
@@ -43,25 +44,35 @@ export default function ChatUI() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [hasSentMessage, setHasSentMessage] = useState(false);
-  const [chatTimer, setChatTimer] = useState<number>(24 * 60); 
+  const [chatTimer, setChatTimer] = useState<number>(24 * 60);
 
   useEffect(() => {
-    if (chatTimer > 0 && messages.length > 1) {
-      const timer = setTimeout(() => {
-        setMessages([
-          {
-            id: 1,
-            text: isAnonymous
-              ? "Te doy la bienvenida a Sentia, ¿Cómo te sientes?"
-              : `¡Hola, ${user?.name || "usuario"}! ¿Cómo te sientes?`,
-            sender: "bot",
-          },
-        ]);
-      }, chatTimer * 60 * 1000); 
+    if (!isAnonymous) {
+      const interval = setInterval(async () => {
+        try {
+          const data = await fetchChatHistory(chatId);
 
-      return () => clearTimeout(timer);
+          const newMessages = data.map((item: any) => ({
+            id: Date.parse(item.timestamp),   // Adaptar si la estructura es diferente
+            text: item.message,
+            sender: "user"
+          })).concat(
+            data.map((item: any) => ({
+              id: Date.parse(item.timestamp) + 1, // Asegura id único si bot y user comparten timestamp
+              text: item.response,
+              sender: "bot"
+            }))
+          );
+
+          setMessages(newMessages);
+        } catch (error) {
+          console.error("Error sincronizando historial:", error);
+        }
+      }, 60000); // Cada minuto
+
+      return () => clearInterval(interval);
     }
-  }, [chatTimer, messages]);
+  }, [isAnonymous, chatId]);
 
   const sendMessage = async (message: string, sender: "bot" | "user" | "system" | "error" = "user") => {
     if (!message.trim()) return;
@@ -70,11 +81,6 @@ export default function ChatUI() {
       if (!hasSentMessage) {
         setHasSentMessage(true);
       }
-
-    const prompt =
-      "Asumirás el rol de un acompañante emocional, con conocimientos generales sobre salud mental, pero siempre dejando claro que no eres un profesional humano. Tu función es brindar contención emocional, escuchar activamente y ayudar al usuario a explorar sus pensamientos o emociones. Si el mensaje difiere completamente de temas que estén relacionados con la salud mental y emocional (como problemas de matemáticas, programación u otros temas), respóndelo igualmente y pregunta si ese tema es la causa del sentimiento. Si detectas emociones fuertes o situaciones delicadas (como ideación suicida, abuso o autolesiones), responde con cuidado y empatía, pero recuerda tus limitaciones. Nunca simules ser un psicólogo ni indiques que puedes diagnosticar o tratar. Si notas que el usuario podría necesitar una atención más especializada, escribe la palabra clave 'AOE' al inicio del mensaje, lo que redigirá automáticamente la conversación a un profesional capacitado. No utilices estilos de letra ni listas; responde en párrafos planos y cálidos. Siempre recuerda al usuario que puedes equivocarte o no entender del todo, porque eres una inteligencia artificial y no un terapeuta real. A continuación, responde al mensaje del usuario teniendo en cuenta lo anterior: ";
-
-    const formattedMessage = `${prompt} ${message}`;
 
       const newMessage: Message = {
         id: Date.now(),
@@ -88,7 +94,7 @@ export default function ChatUI() {
         const response = await fetch(`/api/deepseek`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: formattedMessage }),
+          body: JSON.stringify({ prompt: message }),
         });
 
         if (!response.ok) {
@@ -120,31 +126,22 @@ export default function ChatUI() {
 
   return (
     <div className="flex flex-col h-screen w-screen bg-gray-900 text-white">
-      <header className="bg-gray-800 text-white text-center py-4 font-semibold text-lg shadow-md flex justify-between px-4">
-        <span>
+      <header className="flex items-center justify-between px-4 py-2 bg-gray-800 text-white text-center py-4 font-semibold text-lg shadow-md flex justify-between px-4">
+        <span className="text-[16px] sm:text-[18px] md:text-[20px] lg:text-[24px] font-semibold whitespace-nowrap">
           Sentia {isAnonymous ? "(Modo Anónimo)" : "(Usuario Autenticado)"}
         </span>
+        {!isAnonymous && <ChatTimerSelector
+          userId={chatId}
+        />}
         {!isAnonymous && <LogoutButton />}
       </header>
 
-      {/* Selector del temporizador */}
-      <div className="p-4">
-        <ChatTimerSelector
-          chatId={chatId}
-          currentTimer={chatTimer}
-          onChangeTimer={setChatTimer}
-          // onSendMessage={sendMessage}
-        />
-
-      </div>
-
       {isAnonymous && (
         <div
-          className={`text-center p-2 transition-colors duration-500 ${
-            hasSentMessage
+          className={`text-center p-2 transition-colors duration-500 ${hasSentMessage
               ? "bg-gray-800 text-white"
               : "bg-yellow-500 text-black"
-          }`}
+            }`}
         >
           ⚠️ Estás en modo anónimo. Tu historial de chat no se guardará. ⚠️
         </div>
