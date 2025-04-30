@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { montserrat } from "@/app/styles/fonts";
 import "./styles/globals.css";
-import { UserProvider } from "@auth0/nextjs-auth0/client";
+import { Auth0Provider } from "@auth0/nextjs-auth0";
+import { auth0 } from "@/lib/auth0";
 // import Navbar from "@/app/features/navbar/Navbar";
 
 export const metadata: Metadata = {
@@ -10,20 +11,17 @@ export const metadata: Metadata = {
     "Sentia es una asistente virtual basada en inteligencia artificial diseñada para ofrecer apoyo a personas que enfrentan síntomas de depresión.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth0.getSession();  // obten sesión en SSR
   return (
-    <html lang="es">
-      <UserProvider>
-        <body className={`${montserrat.variable} antialiased`}>
+    <html>
+      <body className={`${montserrat.variable} antialiased`}>
+        <Auth0Provider user={session?.user}>
           {" "}
           {/* <Navbar />  */}
           {children}
-        </body>
-      </UserProvider>
+        </Auth0Provider>
+      </body>
     </html>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { useUser } from "@auth0/nextjs-auth0";
 import { useSearchParams, useRouter } from "next/navigation";
 import ChatMessage from "./ChatMessage";
 import InputBox from "./InputBox";

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { useUser } from "@auth0/nextjs-auth0";
 import { useRouter } from "next/navigation";
 import AuthButton from "@/app/features/auth/AuthButton";
 import Image from "next/image";
