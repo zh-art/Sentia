@@ -1,6 +1,9 @@
 from fastapi.middleware.cors import CORSMiddleware
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
+from dotenv import load_dotenv
+
+load_dotenv()
 
 tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-medium")
 tokenizer.pad_token = tokenizer.eos_token  # Solución del padding

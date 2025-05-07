@@ -4,10 +4,10 @@ import { Fragment, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { useUser } from "@auth0/nextjs-auth0";
-import { updateUserTimer } from "./chatService";
+import { updateTimerSetting } from "../utils/updateTimerSetting";
 
 interface ChatTimerDropdownProps {
-  userId: string;
+  sessionId: string;
 }
 
 const durationOptions = [
@@ -18,43 +18,40 @@ const durationOptions = [
   { label: "90 días", value: 129600 },
 ];
 
-export default function ChatTimerDropdown({ userId }: ChatTimerDropdownProps) {
+export default function ChatTimerDropdown({ sessionId }: ChatTimerDropdownProps) {
   const { user, isLoading } = useUser();
   const [selectedOption, setSelectedOption] = useState(durationOptions[0]);
-  const [message, setMessage] = useState<string>("");
+  const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   if (isLoading || !user) return null;
 
   const handleSelect = async (option: { label: string; value: number }) => {
     setSelectedOption(option);
-    try {
-      const result = await updateUserTimer(userId, option.value);
-  
-      const userName = user?.name || user?.nickname || "Usuario";
-      setMessage(`Temporizador configurado para el usuario ${userName} a ${option.label}.`);
-  
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
-    } catch (error) {
-      console.error("Error actualizando el temporizador:", error);
-      setMessage("Error actualizando el temporizador.");
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
-    }
+    setIsSaving(true);
+
+    const result = await updateTimerSetting(sessionId, option.value);
+
+    const userName = user?.name || user?.nickname || "Usuario";
+    setToastMessage(result.success
+      ? `Temporizador configurado para ${userName} a ${option.label}.`
+      : result.message);
+
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+    setIsSaving(false);
   };
-  
 
   return (
     <div className="relative">
       <Menu as="div" className="relative inline-block text-left">
         <div>
-          <Menu.Button className="min-w-[10rem] sm:min-w-[14rem] md:min-w-[18rem] lg:min-w-[24rem] max-w-full inline-flex justify-center rounded-md bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            Temporizador
+          <Menu.Button
+            className="min-w-[12rem] inline-flex justify-center rounded-md bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+            disabled={isSaving}
+          >
+            {isSaving ? "Guardando..." : "Temporizador"}
             <ChevronDownIcon className="ml-2 -mr-1 h-5 w-5 text-gray-400" />
           </Menu.Button>
         </div>
@@ -68,14 +65,15 @@ export default function ChatTimerDropdown({ userId }: ChatTimerDropdownProps) {
           leaveFrom="opacity-100 scale-100"
           leaveTo="opacity-0 scale-95"
         >
-          <Menu.Items className="absolute w-full right-0 z-50 mt-2 origin-top-right rounded-md bg-gray-900 border border-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+          <Menu.Items className="absolute right-0 z-50 mt-2 w-full origin-top-right rounded-md bg-gray-900 border border-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             {durationOptions.map((option) => (
               <Menu.Item key={option.value}>
                 {({ active }) => (
                   <button
                     onClick={() => handleSelect(option)}
-                    className={`${active ? "bg-blue-500 text-white" : "text-gray-200"
-                      } group flex w-full items-center rounded-md px-4 py-2 text-sm`}
+                    className={`${
+                      active ? "bg-blue-500 text-white" : "text-gray-200"
+                    } group flex w-full items-center rounded-md px-4 py-2 text-sm`}
                   >
                     {option.label}
                   </button>
@@ -87,8 +85,8 @@ export default function ChatTimerDropdown({ userId }: ChatTimerDropdownProps) {
       </Menu>
 
       {showToast && (
-        <div className="absolute top-full mt-2 right-0 z-50 bg-green-700 text-white px-4 py-2 rounded-md shadow-lg animate-fade-in-out min-w-[10rem] sm:min-w-[14rem] md:min-w-[18rem] lg:min-w-[24rem] max-w-full">
-          {message}
+        <div className="absolute top-full mt-2 right-0 z-50 bg-green-700 text-white px-4 py-2 rounded-md shadow-lg animate-fade-in-out min-w-[12rem]">
+          {toastMessage}
         </div>
       )}
     </div>

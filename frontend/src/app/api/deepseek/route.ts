@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const response = await fetch(`http://localhost:8000/chat/generate`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/chat/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

@@ -2,9 +2,12 @@ from fastapi import APIRouter, Request, Path, Body, HTTPException
 from services.chat_service import handle_generate_response, obtener_historial, actualizar_temporizador_usuario
 
 router = APIRouter()
+@router.get("/ia/health")
+def ia_health():
+    return {"status": "ok"}
 
 @router.put("/timer/{user_id}")
-def configurar_temporizador_usuario(user_id: str = Path(...), duration: int = Body(...)):
+async def configurar_temporizador_usuario(user_id: str = Path(...), duration: int = Body(...)):
     try:
         actualizar_temporizador_usuario(user_id, duration)
         return {"message": f"Temporizador configurado para el usuario {user_id} a {duration} minutos."}

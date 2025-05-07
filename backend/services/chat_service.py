@@ -4,7 +4,6 @@ from models.chats import ChatEntrada
 from core.config import tokenizer, model, device
 from utils.token_utils import construir_input_con_historial
 from fastapi import HTTPException
-import torch
 
 async def handle_generate_response(request):
     data = await request.json()

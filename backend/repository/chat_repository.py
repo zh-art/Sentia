@@ -56,7 +56,10 @@ def guardar_chat(chat: ChatEntrada, timer_enabled: bool = False, timer_duration:
     chat_collection.insert_one(chat_data)
 
 def obtener_historial(user_id: str):
-    return list(chat_collection.find({"user_id": user_id}).sort("timestamp", 1))
+    resultados =  list(chat_collection.find({"user_id": user_id}).sort("timestamp", 1))
+    for r in resultados:
+        r["_id"] = str(r["_id"])
+    return resultados
 
 def obtener_configuracion_temporizador_usuario(user_id: str):
     usuario = user_collection.find_one({"user_id": user_id})

@@ -6,4 +6,10 @@ export const auth0 = new Auth0Client({
   clientSecret: process.env.AUTH0_CLIENT_SECRET!,
   secret: process.env.AUTH0_SECRET!,
   appBaseUrl: process.env.APP_BASE_URL!,
+
+  authorizationParameters: {
+    response_type: "code",
+    scope: "openid profile email",
+    audience: process.env.AUTH0_AUDIENCE,
+  },
 });

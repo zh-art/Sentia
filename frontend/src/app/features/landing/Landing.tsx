@@ -14,7 +14,12 @@ export default function Landing() {
 
   useEffect(() => {
     if (user) {
-      router.push("/chat");
+      const roles = user["process.env.AUTH0_BASE/roles"] || [];
+      if (roles.includes("admin")) {
+        router.push("/admin");
+      } else {
+        router.push("/chat");
+      }
     }
 
     const checkDarkMode = () => {
