@@ -1,11 +1,19 @@
 'use client';
 
-import React from "react";
-import { motion } from "framer-motion";
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import ThemeToggle from '../../theme-toggle/ThemeToggle';
 
-export default function HomePage() { 
+export default function HomePage() {
+  const router = useRouter();
+
+  const goToLogin = () => {
+    router.push('/landing');
+  };
   return (
     <main className="min-h-screen bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition duration-300">
+      <ThemeToggle />
       <motion.section
         className="py-32 text-center px-4 bg-blue-50 dark:bg-gray-800"
         initial={{ opacity: 0 }}
@@ -20,7 +28,7 @@ export default function HomePage() {
 
         <button
           className="mt-10 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
-          onClick={() => (window.location.href = "/chat")}
+          onClick={goToLogin}
         >
           Iniciar Chat con Sentia
         </button>
