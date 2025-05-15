@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import ThemeToggle from '../../theme-toggle/ThemeToggle';
+import ThemeToggle from '../theme-toggle/ThemeToggle';
 
 export default function HomePage() {
   const router = useRouter();
@@ -15,7 +15,7 @@ export default function HomePage() {
     <main className="min-h-screen bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition duration-300">
       <ThemeToggle />
       <motion.section
-        className="py-32 text-center px-4 bg-blue-50 dark:bg-gray-800"
+        className="py-32 text-center px-4 bg-blue-100 dark:bg-gray-800"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
@@ -44,7 +44,7 @@ export default function HomePage() {
         </p>
       </section>
 
-      <section className="py-24 bg-white dark:bg-gray-800">
+      <section className="py-24 bg-blue-100 dark:bg-gray-800">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-10">¿Por qué elegir Sentia?</h2>
 

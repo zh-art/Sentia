@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import useSWR from "swr";
 import MetricChart from "./components/MetricChart";
 import HealthTable from "./components/HealthTable";
+import ThemeToggle from "../theme-toggle/ThemeToggle";
+import FeedbackPieChart from "./components/FeedbackPieChart";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -11,7 +13,13 @@ export default function AdminDashboard() {
   const { data, error } = useSWR(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/metrics/`,
     fetcher,
-    { refreshInterval: 10_000 }
+    { refreshInterval: 1000 }
+  );
+
+  const { data: healthData } = useSWR(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/health-systems`,
+    (url) => fetch(url, { method: "POST" }).then((r) => r.json()),
+    { refreshInterval: 10000 }
   );
 
   const [cpuHist, setCpuHist] = useState<{ time: string; value: number }[]>([]);
@@ -37,16 +45,18 @@ export default function AdminDashboard() {
 
   return (
     <main className="p-8">
+      <ThemeToggle />
       <h1 className="text-3xl font-bold mb-6">Panel de Administración</h1>
 
-      <div className="grid gap-8 md:grid-cols-2 mb-8">
+      <div className="grid gap-8 md:grid-cols-2 mb-8 ">
+        <MetricChart title="Cantidad de Usuarios Activos" data={reqHist} dataKey="count" />
+        <MetricChart title="Cantidad de peticiones / min" data={reqHist} dataKey="count" />
+        <FeedbackPieChart positive={32} negative={5} />
+        <MetricChart title="Uso de almacenamiento de BD (%)" data={dbUsageHist} dataKey="value" />
         <MetricChart title="Uso de CPU (%)" data={cpuHist} dataKey="value" />
         <MetricChart title="Uso de GPU (%)" data={gpuHist} dataKey="value" />
-        <MetricChart title="Peticiones / min" data={reqHist} dataKey="count" />
-        <MetricChart title="Uso de almacenamiento de BD (%)" data={dbUsageHist} dataKey="value" />
       </div>
-
-      <HealthTable health={{ ...data.health}} />
+      <HealthTable health={healthData} />
     </main>
   );
 }
