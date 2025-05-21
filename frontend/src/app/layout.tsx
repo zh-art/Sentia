@@ -19,7 +19,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Auth0Provider user={session?.user}>
           {" "}
           {/* <Navbar />  */}
+          <div className="pt-16">
           {children}
+          </div>
         </Auth0Provider>
       </body>
     </html>

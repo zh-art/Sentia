@@ -12,7 +12,7 @@ import {
 
 interface MetricChartProps {
   title: string;
-  data: { time: string; [key: string]: any }[];
+  data: { time: string;[key: string]: any }[];
   dataKey: string;
 }
 
@@ -23,7 +23,9 @@ export default function MetricChart({ title, data, dataKey }: MetricChartProps) 
   const toggleView = () => setIsExpanded(!isExpanded);
 
   const isGauge = title.toLowerCase().includes("uso");
-  const isRequestCircle = title.toLowerCase().includes("cantidad");
+  const isDbStorage = title.toLowerCase().includes("bd");
+  const isQuantityCircle = title.toLowerCase().includes("cantidad");
+  const isUsers = title.toLowerCase().includes("usuarios");
 
   const containerClasses = `
     h-[300px] border rounded-xl p-4 shadow-sm transition-all duration-300
@@ -38,8 +40,8 @@ export default function MetricChart({ title, data, dataKey }: MetricChartProps) 
       percent < 50
         ? "text-green-800 stroke-green-400"
         : percent < 75
-        ? "text-yellow-800 stroke-yellow-400"
-        : "text-red-800 stroke-red-400";
+          ? "text-yellow-800 stroke-yellow-400"
+          : "text-red-800 stroke-red-400";
 
     return (
       <div className="flex flex-col items-center justify-center h-48 pointer-events-none">
@@ -64,14 +66,27 @@ export default function MetricChart({ title, data, dataKey }: MetricChartProps) 
             fontSize="20"
             className={color + " font-semibold"}
           >
-            {percent}%
+            {`${percent.toFixed(2)} %`}
+
           </text>
         </svg>
+        {isDbStorage && (
+          <text
+            x="50%"
+            y="100%"
+            textAnchor="middle"
+            dy=".3em"
+            fontSize="12"
+            className={color + "font-semibold"}
+          >
+            {(data[data.length - 1]?.rawValue || 0).toFixed(2)} MB / 1024 MB
+          </text>
+        )}
       </div>
     );
   };
 
-  const renderRequestCircle = () => {
+  const renderQuantityCircle = () => {
     const average =
       data.reduce((acc, cur) => acc + (cur[dataKey] || 0), 0) / (data.length || 1);
 
@@ -79,7 +94,7 @@ export default function MetricChart({ title, data, dataKey }: MetricChartProps) 
       <div className="flex items-center justify-center h-48 pointer-events-none">
         <div className="w-32 h-32 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center flex-col">
           <span className="text-3xl font-bold">{average.toFixed(1)}</span>
-          <span className="text-sm">msg/min</span>
+          <span className="text-sm">{isUsers ? "usuarios activos" : "msg/min"}</span>
         </div>
       </div>
     );
@@ -100,8 +115,8 @@ export default function MetricChart({ title, data, dataKey }: MetricChartProps) 
         </ResponsiveContainer>
       ) : isGauge ? (
         renderGauge()
-      ) : isRequestCircle ? (
-        renderRequestCircle()
+      ) : isQuantityCircle ? (
+        renderQuantityCircle()
       ) : (
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={data}>

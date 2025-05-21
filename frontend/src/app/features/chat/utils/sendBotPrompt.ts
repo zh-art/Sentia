@@ -7,41 +7,31 @@ interface BotResponse {
 export const sendBotPrompt = async (
   message: string,
   userId: string,
-  isAnonymous: boolean
+  isAnonymous: boolean,
+  messageType: "normal" | "welcome" = "normal"
 ): Promise<BotResponse> => {
   try {
-    const payload = {
-      user_id: userId,
-      message: message,
-      type: isAnonymous ? "anonymous" : "authenticated",
-    };
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/chat/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        message: message,
+        type: isAnonymous ? "anonymous" : "user",
+        message_type: messageType,
+      }),
+    });
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/chat/generate`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }
-    );
+    const data = await res.json();
 
-    if (!response.ok) {
-      return {
-        success: false,
-        error: `Error HTTP: ${response.status}`,
-      };
+    if (!res.ok) {
+      return { success: false, error: data.detail || "Error al generar respuesta" };
     }
 
-    const data = await response.json();
-
-    return {
-      success: true,
-      result: data.result ?? data.response ?? "No se recibió respuesta del bot",
-    };
-  } catch (error: any) {
-    return {
-      success: false,
-      error: error.message || "Error desconocido",
-    };
+    return { success: true, result: data.response };
+  } catch (error) {
+    return { success: false, error: "Error de red o del servidor" };
   }
 };

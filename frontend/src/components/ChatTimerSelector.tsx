@@ -28,7 +28,7 @@ export default function ChatTimerSelector({
     onChangeTimer(newTimer);
     const readableTimer =
       newTimer === 0 ? "desactivado" :
-      newTimer === 5 ? "5 minutos" :
+      newTimer === 1 ? "1 minuto" :
       newTimer === 1440 ? "24 horas" :
       newTimer === 10080 ? "7 días" :
       newTimer === 129600 ? "90 días" : `${newTimer} minutos`;
@@ -36,9 +36,9 @@ export default function ChatTimerSelector({
   
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
-      await axios.put(`${backendUrl}/chat/${chatId}/timer`, {
-        duration: newTimer
-      });
+      await axios.put(`${backendUrl}/chat/${chatId}/timer`, 
+        newTimer
+      );
       console.log("Temporizador actualizado correctamente.");
     } catch (error) {
       console.error("Error al actualizar el temporizador:", error);
@@ -59,10 +59,10 @@ export default function ChatTimerSelector({
         className="bg-gray-700 text-white p-1 rounded"
       >
         <option value={0}>No borrar</option>
+        <option value={1}>1 minuto (prueba)</option>
         <option value={1440}>24 horas</option>
         <option value={10080}>7 días</option>
         <option value={129600}>90 días</option>
-        <option value={5}>5 minutos (prueba)</option>
       </select>
     </div>
   );

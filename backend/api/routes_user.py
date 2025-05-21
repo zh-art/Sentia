@@ -1,61 +1,39 @@
 from fastapi import APIRouter, Path, Body, HTTPException, Depends
-from repository.user_repository import actualizar_temporizador_usuario
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from repository.user_repository import actualizar_temporizador_usuario
 from core.scheduler import iniciar_scheduler, scheduler
 from utils.token_utils import verificar_token
-from fastapi.responses import JSONResponse
+from utils.token_utils import get_management_token
 from apscheduler.schedulers.background import BackgroundScheduler
-from services.chat_service import handle_generate_response
-from starlette.requests import Request as StarletteRequest
-import json
+from datetime import datetime, timedelta
+import requests
+import os
 
 scheduler = BackgroundScheduler()
 router = APIRouter()
 security = HTTPBearer()
+AUTH0_API_IDENTIFIER = os.getenv('AUTH0_API_IDENTIFIER')
 
-@router.post("/health-systems")
-async def sistema_healthcheck():
-    # 1. Verificar IA
-    try:
-        req = StarletteRequest(scope={
-            "type": "http",
-            "method": "POST",
-            "headers": [],
-            "path": "/chat/generate"
-        }, receive=lambda: None)
+@router.get("/active")
+async def get_active_users():
+    token = get_management_token()
+    headers = {"Authorization": f"Bearer {token}"}
 
-        # Simular body con mensaje corto
-        setattr(req, "_body", json.dumps({
-            "user_id": "healthcheck",
-            "message": "ping",
-            "type": "anonymous"
-        }).encode("utf-8"))
+    five_minutes_ago = (datetime.utcnow() - timedelta(minutes=5)).isoformat(timespec="seconds") + "Z"
+    query = f'type:"s" AND date:[{five_minutes_ago} TO *]'
 
-        result = await handle_generate_response(req)
-        ia = "ok" if result.get("response") else "fail"
+    url = f"{AUTH0_API_IDENTIFIER}logs"
+    params = {
+        "q": query,
+        "search_engine": "v3",
+        "per_page": 100
+    }
 
-    except Exception as e:
-        ia = f"error: {str(e)}"
+    response = requests.get(url, headers=headers, params=params)
+    logs = response.json()
 
-    # 2. Verificar Timer
-    try:
-        actualizar_temporizador_usuario("healthcheck", 5)
-        timer = "ok"
-    except Exception as e:
-        timer = f"error: {str(e)}"
-
-    # 3. Verificar si el scheduler está activo
-    try:
-        sch = "ok" if scheduler.running else "not running"
-    except Exception as e:
-        sch = f"error: {str(e)}"
-
-    return JSONResponse({
-        "ia": ia,
-        "timer": timer,
-        "scheduler": sch
-    })
-
+    unique_users = {log["user_id"] for log in logs if "user_id" in log}
+    return {"active_users": len(unique_users)}
 
 @router.put("/timer/{user_id}")
 def configurar_temporizador_usuario(user_id: str = Path(...), duration: int = Body(...)):

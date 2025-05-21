@@ -41,58 +41,59 @@ export default function Landing() {
   }, [user, router]);
 
   return (
-    <div className="relative flex flex-col items-center justify-between min-h-screen bg-gradient-to-b from-white via-indigo-50 to-purple-100 dark:from-[#1a1b26] dark:via-[#1a1c2e] dark:to-[#202237] text-gray-800 dark:text-[#e5e9f0] px-6 py-10 transition-colors duration-300">
+    <div className="h-[94.4vh] flex items-center justify-center bg-gradient-to-b from-white via-indigo-50 to-purple-100 dark:from-[#1a1b26] dark:via-[#1a1c2e] dark:to-[#202237] text-gray-800 dark:text-[#e5e9f0] px-4 py-10 transition-colors duration-300">
       <ThemeToggle />
 
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="text-center mt-20"
-      >
+      <div className="w-full max-w-lg min-h-[600px] bg-transparent dark:bg-[#1a1c2e] rounded-2xl shadow-xl p-8 space-y-8 text-center border border-gray-300 dark:border-gray-600">
         <motion.div
-          key={isDarkMode ? "dark-logo" : "light-logo"}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
         >
-          <Image
-            src={
-              isDarkMode
-                ? "/logo/Sentia-dark-mode.png"
-                : "/logo/Sentia-light-mode.png"
-            }
-            alt="Sentia Logo"
-            width={1024}
-            height={1024}
-            className="w-50 h-50 mx-auto"
-            priority
-          />
+          <motion.div
+            key={isDarkMode ? "dark-logo" : "light-logo"}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+            <Image
+              src={
+                isDarkMode
+                  ? "/logo/Sentia-dark-mode.png"
+                  : "/logo/Sentia-light-mode.png"
+              }
+              alt="Sentia Logo"
+              width={1024}
+              height={1024}
+              className="w-54 h-54 mx-auto"
+              priority
+            />
+          </motion.div>
+
+          <p className="text-lg md:text-xl text-gray-600 dark:text-[#cbd5e1] mt-4">
+            Tu espacio seguro para sentir, compartir y sanar.
+          </p>
         </motion.div>
 
-        <p className="text-lg md:text-xl text-gray-600 dark:text-[#cbd5e1]">
-          Tu espacio seguro para sentir, compartir y sanar.
-        </p>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8, duration: 0.8 }}
-        className="mt-10 w-full max-w-xs space-y-4"
-      >
-        <AuthButton />
-        <button
-          onClick={() => router.push("/chat?anonymous=true")}
-          className="bg-[#2d3145] dark:bg-black border border-white transform transition-transform duration-300 hover:scale-105 text-white px-6 py-3 rounded-xl w-full shadow-lg cursor-pointer font-medium"
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8, duration: 0.8 }}
+          className="space-y-4"
         >
-          Usar de forma anónima
-        </button>
-      </motion.div>
+          <AuthButton />
+          <button
+            onClick={() => router.push("/chat?anonymous=true")}
+            className="bg-[#2d3145] dark:bg-black border border-white transform transition-transform duration-300 hover:scale-105 shadow-lg text-white px-6 py-3 rounded-xl w-full shadow-lg cursor-pointer font-medium"
+          >
+            Usar de forma anónima
+          </button>
+        </motion.div>
 
-      <footer className="text-sm text-gray-500 dark:text-gray-400 mt-16">
-        © {new Date().getFullYear()} Sentia. Todos los derechos reservados.
-      </footer>
+        <footer className="text-sm text-gray-500 dark:text-gray-400 mt-6">
+          © {new Date().getFullYear()} Sentia. Todos los derechos reservados.
+        </footer>
+      </div>
     </div>
   );
 }

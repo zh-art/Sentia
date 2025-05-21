@@ -48,7 +48,7 @@ export default function ChatTimerDropdown({ sessionId }: ChatTimerDropdownProps)
       <Menu as="div" className="relative inline-block text-left">
         <div>
           <Menu.Button
-            className="min-w-[12rem] inline-flex justify-center rounded-md bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+            className="min-w-[12rem] inline-flex justify-center rounded-md bg-gray-800 px-8 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
             disabled={isSaving}
           >
             {isSaving ? "Guardando..." : "Temporizador"}
