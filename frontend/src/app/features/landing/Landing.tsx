@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import AuthButton from "@/app/features/auth/AuthButton";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import ThemeToggle from "@/app/features/theme-toggle/ThemeToggle";
+import ThemeToggle from "@/app/features/theme/ThemeToggle";
 
 export default function Landing() {
   const { user } = useUser();
@@ -42,7 +42,7 @@ export default function Landing() {
 
   return (
     <div className="relative flex flex-col items-center justify-between min-h-screen bg-gradient-to-b from-white via-indigo-50 to-purple-100 dark:from-[#1a1b26] dark:via-[#1a1c2e] dark:to-[#202237] text-gray-800 dark:text-[#e5e9f0] px-6 py-10 transition-colors duration-300">
-      <ThemeToggle />
+      <ThemeToggle  />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -84,14 +84,15 @@ export default function Landing() {
         <AuthButton />
         <button
           onClick={() => router.push("/chat?anonymous=true")}
-          className="bg-[#2d3145] dark:bg-black border border-white transform transition-transform duration-300 hover:scale-105 text-white px-6 py-3 rounded-xl w-full shadow-lg cursor-pointer font-medium"
+          className="bg-white dark:bg-white/5 backdrop-blur-sm border border-gray-300 dark:border-white/10 text-gray-800 dark:text-white px-6 py-3 rounded-xl w-full shadow-md font-medium transition-transform transform hover:scale-105 cursor-pointer"
         >
           Usar de forma anónima
         </button>
       </motion.div>
 
       <footer className="text-sm text-gray-500 dark:text-gray-400 mt-16">
-        © {new Date().getFullYear()} Sentia. Todos los derechos reservados.
+        © {new Date().getFullYear()}Sentia. Todos los derechos reservados. |
+        Desarrollado con 💙 en Colombia
       </footer>
     </div>
   );

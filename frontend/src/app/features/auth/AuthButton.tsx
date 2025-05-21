@@ -10,7 +10,7 @@ export default function AuthButton() {
   return (
     <Link
       href={loginUrl}
-      className="bg-white border border-black text-black px-6 py-3 rounded-xl block text-center w-full font-medium transform transition-transform duration-300 hover:scale-105 shadow-lg"
+      className="bg-[#2563eb] dark:bg-cyan-500 hover:bg-[#1d4ed8] dark:hover:bg-cyan-400 text-white px-6 py-3 rounded-xl block text-center w-full font-medium transform transition-transform duration-300 hover:scale-105 shadow-lg"
     >
       Iniciar sesión
     </Link>
