@@ -35,7 +35,7 @@ export default function ChatUI() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasUserStartedChat, setHasUserStartedChat] = useState(false);
-  const [currentTimer, setCurrentTimer] = useState<number>(0); // Nuevo estado
+  const [currentTimer, setCurrentTimer] = useState<number>(0);
 
   // Redirigir si no está autenticado y no es anónimo
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function ChatUI() {
   const sendMessage = async (
     message: string,
     sender: "bot" | "user" | "system" | "error" = "user",
-    messageType: "normal" | "welcome" = "normal"
+    messageType: "normal" | "welcome" | "system" = "normal"
   ) => {
     if (!message.trim()) return;
 

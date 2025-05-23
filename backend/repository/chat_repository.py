@@ -34,6 +34,7 @@ def guardar_chat(chat: ChatEntrada, timer_enabled: bool = False, timer_duration:
         "response": chat.response,
         "timestamp": timestamp,
         "timer_enabled": timer_enabled,
+        "message_type": chat.message_type
     }
 
     if timer_enabled and timer_duration > 0:

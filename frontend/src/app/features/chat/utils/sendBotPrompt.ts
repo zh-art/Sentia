@@ -8,7 +8,7 @@ export const sendBotPrompt = async (
   message: string,
   userId: string,
   isAnonymous: boolean,
-  messageType: "normal" | "welcome" = "normal"
+  messageType: "normal" | "welcome" | "system" = "normal"
 ): Promise<BotResponse> => {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/chat/generate`, {

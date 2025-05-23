@@ -7,7 +7,7 @@ interface ChatTimerSelectorProps {
   chatId: string;
   currentTimer: number;
   onChangeTimer: (newTimer: number) => void;
-  onSendMessage: (message: string, sender?: "bot" | "user" | "system" | "error") => void;
+  onSendMessage: (message: string, sender?: "bot" | "user" | "system" | "error", messageType?: "normal" | "welcome" | "system") => void;
 }
 
 export default function ChatTimerSelector({
@@ -32,7 +32,7 @@ export default function ChatTimerSelector({
       newTimer === 1440 ? "24 horas" :
       newTimer === 10080 ? "7 días" :
       newTimer === 129600 ? "90 días" : `${newTimer} minutos`;
-    onSendMessage(`Temporizador de eliminación de mensajes ${newTimer === 0 ? 'desactivado' : `establecido a ${readableTimer}`}.`, "system");
+    onSendMessage(`Temporizador de eliminación de mensajes ${newTimer === 0 ? 'desactivado' : `establecido a ${readableTimer}`}.`, "system", "system");
   
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';

@@ -24,11 +24,13 @@ async def handle_generate_response(request):
         timer_enabled = config["enabled"]
         timer_duration = config["duration"]
 
-        guardar_chat(
-            ChatEntrada(user_id=user_id, message=message, response=message),
-            timer_enabled=timer_enabled,
-            timer_duration=timer_duration
-        )
+        if not anonymous:
+            guardar_chat(
+                ChatEntrada(user_id=user_id, message=message, response=message, message_type=message_type),
+                timer_enabled=timer_enabled,
+                timer_duration=timer_duration
+            )
+
         return {"response": message}
 
 
@@ -40,6 +42,8 @@ async def handle_generate_response(request):
 
     messages = [{"role": "system", "content": prompt}]
     for h in historial:
+        if h.get("message_type") == "system":
+            continue
         messages.append({"role": "user", "content": h["message"]})
         messages.append({"role": "assistant", "content": h["response"]})
     messages.append({"role": "user", "content": message})
@@ -55,12 +59,13 @@ async def handle_generate_response(request):
         timer_enabled = config["enabled"]
         timer_duration = config["duration"]
 
-        guardar_chat(
-            ChatEntrada(user_id=user_id, message=message, response=respuesta),
-            timer_enabled=timer_enabled,
-            timer_duration=timer_duration
-        )
-
+        if not anonymous:
+            guardar_chat(
+                ChatEntrada(user_id=user_id, message=message, response=respuesta, message_type=message_type),
+                timer_enabled=timer_enabled,
+                timer_duration=timer_duration
+            )
+        
         return {"response": respuesta}
 
     except Exception as e:
