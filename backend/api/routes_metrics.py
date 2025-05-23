@@ -1,15 +1,10 @@
 from fastapi import APIRouter, Request
-import psutil
-import GPUtil
-import requests
 from core.middleware import request_timestamps
 from database.mongo_client import client
-import os
+import psutil
+import GPUtil
 
 router = APIRouter()
-
-# Cargar URL base del backend desde .env
-origin = os.getenv("BACKEND_BASE_URL", "http://127.0.0.1:8000")
 
 @router.get("/")
 async def get_metrics(request: Request):
@@ -23,28 +18,25 @@ async def get_metrics(request: Request):
     except Exception:
         gpu_usage = -1
 
-    # DB status
+    # Uso de base de datos MongoDB
     try:
-        client.admin.command("ping")
-        db_status = True
-    except:
-        db_status = False
+        db_stats = client.admin.command("dbStats")
+        db_storage_usage_mb = db_stats.get("storageSize", 0) / (1024 * 1024)  # en MB
+        db_max_allowed_mb = 1024
 
-    # Health checks
-    try:
-        r = requests.post(f"{origin}/user/health-systems", data={}, timeout=5)
-        health = r.json()
-    except Exception as e:
-        health = {
-            "ia": f"error: {str(e)}",
-            "timer": f"error: {str(e)}",
-            "scheduler": f"error: {str(e)}",
-        }
+        if db_max_allowed_mb > 0:
+            db_storage_usage_percent = round((db_storage_usage_mb / db_max_allowed_mb) * 100, 2)
+        else:
+            db_storage_usage_percent = -1
+    except Exception:
+        db_storage_usage_mb = -1
+        db_storage_usage_percent = -1
 
     return {
-        "cpuUsage": cpu_usage,
-        "gpuUsage": gpu_usage,
-        "dbStatus": db_status,
-        "requestFrequency": len(request_timestamps),
-        "health": health
-    }
+    "cpuUsage": cpu_usage,
+    "gpuUsage": gpu_usage,
+    "dbStorageUsage": db_storage_usage_mb,
+    "dbStorageUsagePercent": db_storage_usage_percent,
+    "requestFrequency": len(request_timestamps),
+    "usersActivity": ""
+}

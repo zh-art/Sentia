@@ -10,3 +10,18 @@ def crear_usuario_si_no_existe(user_id: str):
             "user_id": user_id,
             "name": "Usuario Anónimo"
         })
+
+def actualizar_temporizador_usuario(user_id: str, duration: int):
+    if not user_id or duration < 0:
+        raise ValueError("Parámetros inválidos")
+
+    user_collection.update_one(
+        {"user_id": user_id},
+        {
+            "$set": {
+                "timer_enabled": duration > 0,
+                "timer_duration": duration * 60  # Guardar en segundos
+            }
+        },
+        upsert=True
+    )

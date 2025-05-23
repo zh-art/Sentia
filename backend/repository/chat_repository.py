@@ -17,41 +17,33 @@ def actualizar_temporizador(user_id: str, duration_minutes: int):
 def eliminar_mensajes_expirados(user_id: str):
     now = datetime.utcnow()
 
-    chats = chat_collection.find({
+    # Solo eliminar los que hayan alcanzado su tiempo individual
+    result = chat_collection.delete_many({
         "user_id": user_id,
-        "timer_enabled": True
+        "timer_enabled": True,
+        "delete_after": {"$lte": now}
     })
 
-    total_eliminados = 0
-
-    for chat in chats:
-        activated_at = chat.get("timer_activated_at")
-        duration = chat.get("timer_duration")
-
-        if not activated_at or not duration:
-            continue
-
-        umbral = activated_at + timedelta(seconds=duration)
-        if now >= umbral:
-            result = chat_collection.delete_one({"_id": chat["_id"]})
-            total_eliminados += result.deleted_count
-
-    return total_eliminados
+    return result.deleted_count
 
 def guardar_chat(chat: ChatEntrada, timer_enabled: bool = False, timer_duration: int = 0):
+    timestamp = datetime.utcnow()
     chat_data = {
         "user_id": chat.user_id,
         "message": chat.message,
         "response": chat.response,
-        "timestamp": datetime.utcnow(),
+        "timestamp": timestamp,
         "timer_enabled": timer_enabled,
+        "message_type": chat.message_type
     }
 
     if timer_enabled and timer_duration > 0:
         chat_data.update({
-            "timer_duration": timer_duration,                     
-            "timer_activated_at": datetime.utcnow()              
+            "timer_duration": timer_duration,
+            "delete_after": datetime.utcnow() + timedelta(seconds=timer_duration)
         })
+    else:
+        chat_data["timer_enabled"] = False  
 
     chat_collection.insert_one(chat_data)
 

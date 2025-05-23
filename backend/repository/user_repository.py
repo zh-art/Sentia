@@ -9,17 +9,18 @@ def crear_usuario_si_no_existe(user_id: str):
         })
 
 def actualizar_temporizador_usuario(user_id: str, duration_minutes: int):
-    if duration_minutes not in [0, 5, 1440, 10080, 129600]:
-        raise ValueError("Duración no permitida")
+    if not user_id or duration_minutes < 0:
+        raise ValueError("Parámetros inválidos")
 
     user_collection.update_one(
         {"user_id": user_id},
         {
             "$set": {
                 "timer_enabled": duration_minutes > 0,
-                "timer_duration": duration_minutes * 60  # segundos
+                "timer_duration": duration_minutes * 60  # en segundos
             }
-        }
+        },
+        upsert=True
     )
 
 def obtener_configuracion_temporizador_usuario(user_id: str):

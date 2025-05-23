@@ -1,16 +1,13 @@
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
+from openai import OpenAI
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
-tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-medium")
-tokenizer.pad_token = tokenizer.eos_token  # Solución del padding
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-medium")
-device = torch.device("cpu")
-model.to(device)
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 def configure_app(app):
     app.add_middleware(
