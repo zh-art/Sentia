@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import useSWR from "swr";
 import MetricChart from "./components/MetricChart";
 import HealthTable from "./components/HealthTable";
-import ThemeToggle from "../theme-toggle/ThemeToggle";
+import ThemeToggle from "../theme/ThemeToggle";
 import FeedbackPieChart from "./components/FeedbackPieChart";
 import Navbar from "../navbar/Navbar";
 
