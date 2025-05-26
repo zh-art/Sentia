@@ -51,18 +51,6 @@ export default function ChatTimerDropdown({
   };
 
   return (
-<<<<<<< Updated upstream
-    <div className="relative">
-      <Menu as="div" className="relative inline-block text-left">
-        <div>
-          <Menu.Button
-            className="min-w-[12rem] inline-flex justify-center rounded-md bg-gray-800 px-8 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-            disabled={isSaving}
-          >
-            {isSaving ? "Guardando..." : "Temporizador"}
-            <ChevronDownIcon className="ml-2 -mr-1 h-5 w-5 text-gray-400" />
-          </Menu.Button>
-=======
     <Menu as="div" className="relative w-full">
       <div className="flex items-center justify-between px-2">
         <p className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -74,7 +62,6 @@ export default function ChatTimerDropdown({
             Define en cuánto tiempo se eliminará la conversación de forma
             automática.
           </div>
->>>>>>> Stashed changes
         </div>
       </div>
 
