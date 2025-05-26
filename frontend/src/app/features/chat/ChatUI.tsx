@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import { useUser } from "@auth0/nextjs-auth0";
 import { useSearchParams, useRouter } from "next/navigation";
 
+<<<<<<< Updated upstream
 import AnonymityAlert from "./components/AnonymityAlert";
+=======
+import ChatHeader from "./components/ChatHeader";
+>>>>>>> Stashed changes
 import ChatMessages from "./components/ChatMessagesList";
 import InputBox from "./components/InputBox";
 
@@ -57,7 +61,11 @@ export default function ChatUI() {
       startScheduler();
       synchronizeChatHistory(sessionId, setMessages);
     }
+<<<<<<< Updated upstream
   }, [user, isLoading, isAnonymous, sessionId]);
+=======
+  }, [isAnonymous, sessionId]);
+>>>>>>> Stashed changes
 
   // Enviar mensaje del usuario
   const sendMessage = async (
@@ -69,6 +77,35 @@ export default function ChatUI() {
 
     if (sender === "user") {
       if (!hasUserStartedChat) setHasUserStartedChat(true);
+<<<<<<< Updated upstream
+=======
+
+      const userMsg: Message = {
+        id: Date.now(),
+        text: message,
+        sender: "user",
+      };
+
+      setMessages((prev) => [...prev, userMsg]);
+      setIsLoading(true);
+
+      const response = await sendBotPrompt(
+        message,
+        isAnonymous ? sessionId : userId,
+        isAnonymous
+      );
+
+      const newMsg: Message = {
+        id: Date.now(),
+        text: response.success
+          ? response.result!
+          : response.error || "Error desconocido",
+        sender: response.success ? "bot" : "error",
+      };
+
+      setMessages((prev) => [...prev, newMsg]);
+      setIsLoading(false);
+>>>>>>> Stashed changes
     }
 
     const localMessage: Message = {
@@ -110,6 +147,7 @@ export default function ChatUI() {
       : "Sentia (Modo anónimo)";
 
   return (
+<<<<<<< Updated upstream
     <div className="flex flex-col h-[94vh] w-screen bg-gray-900 text-white">
       <Navbar
         title={title}
@@ -135,6 +173,16 @@ export default function ChatUI() {
         )}
       </div>
 
+=======
+    <div className="flex flex-col h-screen w-screen bg-gray-900 text-white">
+      <ChatHeader
+        isAnonymous={isAnonymous}
+        sessionId={sessionId}
+        userName={user?.name}
+        userPicture={user?.picture}
+      />
+
+>>>>>>> Stashed changes
       <ChatMessages messages={messages} isLoading={isLoading} />
       <div className="border-t py-2">
         <div className="max-w-6xl w-full mx-auto px-4">
