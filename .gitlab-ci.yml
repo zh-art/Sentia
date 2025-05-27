@@ -1,0 +1,12 @@
+stages:
+  - test
+
+backend_tests:
+  stage: test
+  image: python:3.12
+  before_script:
+    - cd backend
+    - pip install -r requirements.txt
+    - pip install pytest pytest-asyncio
+  script:
+    - pytest tests/ --disable-warnings
