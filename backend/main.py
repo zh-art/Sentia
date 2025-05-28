@@ -6,6 +6,15 @@ from api.routes_user import router as user_router
 from api.routes_metrics import router as metrics_router
 from api.routes_health import router as health_router
 from api.routes_report import router as report_router
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app = FastAPI()
 
