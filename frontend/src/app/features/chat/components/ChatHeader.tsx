@@ -17,6 +17,8 @@ interface ChatHeaderProps {
   sessionId: string;
   userName?: string;
   userPicture?: string;
+  userId?: string;
+  reporteId?: string;
 }
 
 const fadeInUp = {
@@ -27,6 +29,8 @@ const fadeInUp = {
 export default function ChatHeader({
   isAnonymous,
   sessionId,
+  userId,
+  reporteId,
 }: ChatHeaderProps) {
   const { user } = useUser();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -106,6 +110,109 @@ export default function ChatHeader({
                       text-gray-800 dark:text-gray-200 transition cursor-pointer text-left"
                     >
                       Configuración
+                    </button>
+
+                    <button
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(
+                            "http://localhost:8000/reporte/reporte/generar",
+                            {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                              },
+                            }
+                          );
+
+                          if (!response.ok) {
+                            throw new Error("Error al generar el reporte");
+                          }
+
+                          const data = await response.json();
+                          console.log("✅ Reporte generado:", data);
+                          alert("Reporte generado exitosamente");
+                        } catch (error) {
+                          console.error("❌ Error generando reporte:", error);
+                          alert("Ocurrió un error al generar el reporte");
+                        }
+                      }}
+                      className="w-full px-4 py-2 text-sm rounded-md 
+                      bg-gray-100 hover:bg-gray-200 
+                      dark:bg-gray-800 dark:hover:bg-gray-700 
+                    text-gray-800 dark:text-gray-200 transition cursor-pointer text-left"
+                    >
+                      Generar reporte
+                    </button>
+
+                    <button
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(
+                            `http://localhost:8000/reporte/reporte/?user_id=${userId}`,
+                            {
+                              method: "GET",
+                              headers: {
+                                "Content-Type": "application/json",
+                              },
+                            }
+                          );
+
+                          if (!response.ok)
+                            throw new Error("Error al obtener el reporte");
+
+                          const data = await response.json();
+                          console.log("📄 Reportes listados:", data);
+                          alert("Reporte obtenido exitosamente");
+                        } catch (error) {
+                          console.error(
+                            "❌ Error al obtener el reporte:",
+                            error
+                          );
+                          alert("Ocurrió un error al listar el reporte");
+                        }
+                      }}
+                      className="w-full px-4 py-2 text-sm rounded-md 
+                    bg-gray-100 hover:bg-gray-200 
+                    dark:bg-gray-800 dark:hover:bg-gray-700 
+                    text-gray-800 dark:text-gray-200 transition cursor-pointer text-left"
+                    >
+                      Listar reporte
+                    </button>
+
+                    <button
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(
+                            `http://localhost:8000/reporte/reporte/${reporteId}?user_id=${userId}`,
+                            {
+                              method: "GET",
+                              headers: {
+                                "Content-Type": "application/json",
+                              },
+                            }
+                          );
+
+                          if (!response.ok)
+                            throw new Error("Error al obtener el reporte");
+
+                          const data = await response.json();
+                          console.log("📄 Reporte específico:", data);
+                          alert("Reporte específico obtenido exitosamente");
+                        } catch (error) {
+                          console.error(
+                            "❌ Error al obtener el reporte:",
+                            error
+                          );
+                          alert("Ocurrió un error al consultar el reporte");
+                        }
+                      }}
+                      className="w-full px-4 py-2 text-sm rounded-md 
+                    bg-gray-100 hover:bg-gray-200 
+                    dark:bg-gray-800 dark:hover:bg-gray-700 
+                    text-gray-800 dark:text-gray-200 transition cursor-pointer text-left"
+                    >
+                      Eliminar reporte
                     </button>
 
                     <button
