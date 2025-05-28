@@ -2,7 +2,7 @@ from openai import OpenAI
 from datetime import datetime
 from core.config import client
 from fastapi import HTTPException
-from models.reports import Reporte
+from models.reports import ReporteBD
 from repository.report_repository import (
     guardar_reporte,
     obtener_reportes_por_usuario,
@@ -31,7 +31,7 @@ async def generar_reporte_semanal(user_id: str):
 
         contenido_reporte = completion.choices[0].message.content
 
-        reporte = Reporte(
+        reporte = ReporteBD(
             user_id=user_id,
             contenido=contenido_reporte
         )

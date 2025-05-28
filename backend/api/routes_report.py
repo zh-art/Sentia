@@ -4,7 +4,7 @@ from services.report_service import (
     obtener_reportes_usuario,
     eliminar_reporte_usuario
 )
-from models.reports import ReporteEntrada
+from models.reports import ReporteEntrada, ReporteBD
 from typing import List
 
 router = APIRouter(prefix="/reporte", tags=["reporte"])
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/reporte", tags=["reporte"])
 async def generar_reporte(data: ReporteEntrada):
     return await generar_reporte_semanal(data.user_id)
 
-@router.get("/", response_model=List[dict])
+@router.get("/", response_model=List[ReporteBD])
 async def listar_reportes(user_id: str = Query(..., description="ID del usuario")):
     reportes = obtener_reportes_usuario(user_id)
     if not reportes:
