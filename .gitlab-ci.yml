@@ -1,12 +1,60 @@
 stages:
-  - test
+  - test-backend
+  - deploy-backend
+  - test-frontend
+  - deploy-frontend
 
-backend_tests:
-  stage: test
+test_backend:
+  stage: test-backend
   image: python:3.12
-  before_script:
+  script:
     - cd backend
     - pip install -r requirements.txt
     - pip install pytest pytest-asyncio
-  script:
     - pytest tests/ --disable-warnings
+  artifacts:
+    when: always
+    paths:
+      - backend/
+    expire_in: 1 hour
+
+deploy_backend:
+  stage: deploy-backend
+  image: curlimages/curl:latest
+  script:
+    - echo "Desplegando el backend..."
+    # Ejemplo usando Render webhook, reemplaza con tu URL real:
+    - curl -X POST https://api.render.com/deploy/srv-xxxxxxxxxxxx?key=YOUR_DEPLOY_HOOK
+  only:
+    - main
+  needs:
+    - test_backend
+
+test_frontend:
+  stage: test-frontend
+  image: node:20
+  script:
+    - cd frontend
+    - npm ci
+    - echo "Sin pruebas unitarias aún, pasando..."
+  artifacts:
+    when: always
+    paths:
+      - frontend/
+    expire_in: 1 hour
+
+deploy_frontend:
+  stage: deploy-frontend
+  image: node:20
+  before_script:
+    - cd frontend
+    - npm ci
+    - npm install -g firebase-tools
+    - firebase --version
+  script:
+    - npm run build
+    - firebase deploy --token "$FIREBASE_TOKEN"
+  only:
+    - main
+  needs:
+    - test_frontend
