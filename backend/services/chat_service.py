@@ -73,6 +73,7 @@ async def handle_generate_response(request):
                 timer_enabled=timer_enabled,
                 timer_duration=timer_duration
             )
+        print("Respuesta generada:", respuesta)
         return {"response": respuesta}
 
     except Exception as e:

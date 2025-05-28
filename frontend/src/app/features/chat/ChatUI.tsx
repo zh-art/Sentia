@@ -40,8 +40,6 @@ export default function ChatUI() {
     const welcomeText = isAnonymous
       ? "Te doy la bienvenida a Sentia, ¿Cómo te sientes?"
       : `Hola, ${user?.name || "usuario"} ¿Cómo te sientes?"`;
-
-    sendMessage(welcomeText, "bot", "welcome");
   }, [user, isAnonymous]);
 
   useEffect(() => {

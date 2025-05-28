@@ -9,7 +9,7 @@ from typing import List
 
 router = APIRouter(prefix="/reporte", tags=["reporte"])
 
-@router.post("/generar")
+@router.post("/generate")
 async def generar_reporte(data: ReporteEntrada):
     return await generar_reporte_semanal(data.user_id)
 
