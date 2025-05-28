@@ -4,7 +4,13 @@ import Link from "next/link";
 import MobileMenu from "./MobileMenu";
 import ThemeToggle from "@/app/features/theme/ThemeToggle";
 
-export default function Navbar() {
+interface NavbarProps {
+  title: string;
+  items: { name: string; url: string }[];
+}
+
+export default function Navbar(NavbarProps: NavbarProps) {
+  const { title, items } = NavbarProps;
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-[#1a1b26] border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
