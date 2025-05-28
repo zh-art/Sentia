@@ -11,6 +11,8 @@ import { Fragment, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import SettingsModal from "@/app/features/settings/SettingsModal";
+import ReportsModal from "@/app/features/reports/components/ReportsModal";
+import { useReports } from "@/app/features/reports/hooks/useReports";
 
 interface ChatHeaderProps {
   isAnonymous: boolean;
@@ -34,9 +36,45 @@ export default function ChatHeader({
 }: ChatHeaderProps) {
   const { user } = useUser();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isReportsOpen, setIsReportsOpen] = useState(false);
+
+  const { reportes, fetchReportes, crearReporte, borrarReporte } = useReports(
+    userId || ""
+  );
 
   const audience = process.env.NEXT_PUBLIC_AUTH0_AUDIENCE;
   const loginUrl = `/auth/login?returnTo=/chat&audience=${audience}`;
+
+  const handleGenerar = async () => {
+    try {
+      await crearReporte();
+      alert("✅ Reporte generado exitosamente");
+    } catch (error) {
+      console.error("Error generando reporte:", error);
+      alert("❌ Ocurrió un error al generar el reporte");
+    }
+  };
+
+  const handleListar = async () => {
+    try {
+      await fetchReportes();
+      setIsReportsOpen(true);
+    } catch (error) {
+      console.error("Error listando reportes:", error);
+      alert("❌ Ocurrió un error al listar los reportes");
+    }
+  };
+
+  const handleEliminar = async () => {
+    try {
+      if (!reporteId) return alert("No se proporcionó un ID de reporte.");
+      await borrarReporte(reporteId);
+      alert("🗑 Reporte eliminado exitosamente");
+    } catch (error) {
+      console.error("Error eliminando reporte:", error);
+      alert("❌ Ocurrió un error al eliminar el reporte");
+    }
+  };
 
   return (
     <>
@@ -113,30 +151,7 @@ export default function ChatHeader({
                     </button>
 
                     <button
-                      onClick={async () => {
-                        try {
-                          const response = await fetch(
-                            "http://localhost:8000/reporte/reporte/generar",
-                            {
-                              method: "POST",
-                              headers: {
-                                "Content-Type": "application/json",
-                              },
-                            }
-                          );
-
-                          if (!response.ok) {
-                            throw new Error("Error al generar el reporte");
-                          }
-
-                          const data = await response.json();
-                          console.log("✅ Reporte generado:", data);
-                          alert("Reporte generado exitosamente");
-                        } catch (error) {
-                          console.error("❌ Error generando reporte:", error);
-                          alert("Ocurrió un error al generar el reporte");
-                        }
-                      }}
+                      onClick={handleGenerar}
                       className="w-full px-4 py-2 text-sm rounded-md 
                       bg-gray-100 hover:bg-gray-200 
                       dark:bg-gray-800 dark:hover:bg-gray-700 
@@ -146,32 +161,7 @@ export default function ChatHeader({
                     </button>
 
                     <button
-                      onClick={async () => {
-                        try {
-                          const response = await fetch(
-                            `http://localhost:8000/reporte/reporte/?user_id=${userId}`,
-                            {
-                              method: "GET",
-                              headers: {
-                                "Content-Type": "application/json",
-                              },
-                            }
-                          );
-
-                          if (!response.ok)
-                            throw new Error("Error al obtener el reporte");
-
-                          const data = await response.json();
-                          console.log("📄 Reportes listados:", data);
-                          alert("Reporte obtenido exitosamente");
-                        } catch (error) {
-                          console.error(
-                            "❌ Error al obtener el reporte:",
-                            error
-                          );
-                          alert("Ocurrió un error al listar el reporte");
-                        }
-                      }}
+                      onClick={handleListar}
                       className="w-full px-4 py-2 text-sm rounded-md 
                     bg-gray-100 hover:bg-gray-200 
                     dark:bg-gray-800 dark:hover:bg-gray-700 
@@ -181,32 +171,7 @@ export default function ChatHeader({
                     </button>
 
                     <button
-                      onClick={async () => {
-                        try {
-                          const response = await fetch(
-                            `http://localhost:8000/reporte/reporte/${reporteId}?user_id=${userId}`,
-                            {
-                              method: "GET",
-                              headers: {
-                                "Content-Type": "application/json",
-                              },
-                            }
-                          );
-
-                          if (!response.ok)
-                            throw new Error("Error al obtener el reporte");
-
-                          const data = await response.json();
-                          console.log("📄 Reporte específico:", data);
-                          alert("Reporte específico obtenido exitosamente");
-                        } catch (error) {
-                          console.error(
-                            "❌ Error al obtener el reporte:",
-                            error
-                          );
-                          alert("Ocurrió un error al consultar el reporte");
-                        }
-                      }}
+                      onClick={handleEliminar}
                       className="w-full px-4 py-2 text-sm rounded-md 
                     bg-gray-100 hover:bg-gray-200 
                     dark:bg-gray-800 dark:hover:bg-gray-700 
@@ -274,6 +239,11 @@ export default function ChatHeader({
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+      />
+      <ReportsModal
+        isOpen={isReportsOpen}
+        onClose={() => setIsReportsOpen(false)}
+        reportes={reportes}
       />
     </>
   );
