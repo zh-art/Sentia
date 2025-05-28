@@ -3,6 +3,7 @@ from repository.chat_repository import guardar_chat, obtener_historial
 from models.chats import ChatEntrada
 from core.config import client
 from fastapi import HTTPException
+from services.rag_service import answer_with_context
 
 async def handle_generate_response(request):
     data = await request.json()
@@ -10,7 +11,14 @@ async def handle_generate_response(request):
     message = data.get("message")
     user_type = data.get("type", "anonymous")
     anonymous = user_type == "anonymous"
-    message_type = data.get("message_type", "normal") 
+    message_type = data.get("message_type", "normal")
+
+    if message_type == "rag":
+        respuesta_rag = answer_with_context(message)
+
+        config = obtener_configuracion_temporizador_usuario(user_id)
+        timer_enabled = config["enabled"]
+        timer_duration = config["duration"] 
 
     if not user_id or not message:
         raise HTTPException(status_code=400, detail="Faltan campos requeridos: user_id y message")
@@ -24,14 +32,14 @@ async def handle_generate_response(request):
         timer_enabled = config["enabled"]
         timer_duration = config["duration"]
 
-        if not anonymous:
-            guardar_chat(
-                ChatEntrada(user_id=user_id, message=message, response=message, message_type=message_type),
-                timer_enabled=timer_enabled,
-                timer_duration=timer_duration
-            )
+    if not anonymous:
+        guardar_chat(
+            ChatEntrada(user_id=user_id, message=message, response=respuesta_rag, message_type=message_type),
+            timer_enabled=timer_enabled,
+            timer_duration=timer_duration
+        )
 
-        return {"response": message}
+        return {"response": respuesta_rag}
 
 
     historial = [] if anonymous else obtener_historial(user_id)
@@ -50,7 +58,7 @@ async def handle_generate_response(request):
 
     try:
         completion = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="ft:gpt-4o-mini-2024-07-18:sentia:dataset-depresion-sentia-v1:BbYv6ZsM",
             messages=messages
         )
         respuesta = completion.choices[0].message.content

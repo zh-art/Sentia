@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Path, Body, HTTPException
 from services.chat_service import handle_generate_response, obtener_historial, actualizar_temporizador_usuario
-#from services.rag_service import answer_with_context
+from services.rag_service import answer_with_context
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -26,7 +26,7 @@ async def generate_response(request: Request):
 def historial(user_id: str):
     return obtener_historial(user_id)
 
-#@router.post("/chat-rag")
-#def chat_rag(query: RAGQuery):
-    #result = answer_with_context(query.user_message)
-    #return {"response": result}
+@router.post("/chat-rag")
+def chat_rag(query: RAGQuery):
+    result = answer_with_context(query.user_message)
+    return {"response": result}

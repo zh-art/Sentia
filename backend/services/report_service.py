@@ -25,7 +25,7 @@ async def generar_reporte_semanal(user_id: str):
         ]
 
         completion = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="ft:gpt-4o-mini-2024-07-18:sentia:dataset-depresion-sentia-v1:BbYv6ZsM",
             messages=messages
         )
 
