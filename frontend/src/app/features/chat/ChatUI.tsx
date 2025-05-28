@@ -86,34 +86,34 @@ export default function ChatUI() {
 
       setMessages((prev) => [...prev, newMsg]);
       setIsLoading(false);
+    } else {
+      const localMessage: Message = {
+        id: Date.now(),
+        text: message,
+        sender,
+      };
+
+      setMessages((prev) => [...prev, localMessage]);
+      setIsLoading(true);
+
+      const response = await sendBotPrompt(
+        message,
+        isAnonymous ? sessionId : userId,
+        isAnonymous,
+        messageType
+      );
+
+      const newMsg: Message = {
+        id: Date.now(),
+        text: response.success
+          ? response.result!
+          : response.error || "Error desconocido",
+        sender: response.success ? "bot" : "error",
+      };
+
+      setMessages((prev) => [...prev, newMsg]);
+      setIsLoading(false);
     }
-
-    const localMessage: Message = {
-      id: Date.now(),
-      text: message,
-      sender,
-    };
-
-    setMessages((prev) => [...prev, localMessage]);
-    setIsLoading(true);
-
-    const response = await sendBotPrompt(
-      message,
-      isAnonymous ? sessionId : userId,
-      isAnonymous,
-      messageType
-    );
-
-    const newMsg: Message = {
-      id: Date.now(),
-      text: response.success
-        ? response.result!
-        : response.error || "Error desconocido",
-      sender: response.success ? "bot" : "error",
-    };
-
-    setMessages((prev) => [...prev, newMsg]);
-    setIsLoading(false);
   };
 
   return (

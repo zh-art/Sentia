@@ -8,6 +8,9 @@ from api.routes_health import router as health_router
 from api.routes_report import router as report_router
 from fastapi.middleware.cors import CORSMiddleware
 
+app = FastAPI()
+
+configure_app(app)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -15,10 +18,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app = FastAPI()
-
-configure_app(app)
 app.add_middleware(RequestTrackerMiddleware)
 app.include_router(chat_router, prefix="/chat", tags=["Chat"])
 app.include_router(user_router, prefix="/user", tags=["User"])

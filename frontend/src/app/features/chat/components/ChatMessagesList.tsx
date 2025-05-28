@@ -26,7 +26,7 @@ export default function ChatMessages({
       dark:from-[#1a1b26] dark:via-[#1a1c2e] dark:to-[#202237]"
     >
       {messages.map((msg) => (
-        <ChatMessage key={msg.id} text={msg.text} sender={msg.sender} />
+        <ChatMessage key={`${msg.id}-${msg.text.slice(0, 10)}-${msg.sender}`} text={msg.text} sender={msg.sender} />
       ))}
 
       {isLoading && <ChatMessage text="Escribiendo..." sender="bot" />}

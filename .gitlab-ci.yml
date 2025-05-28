@@ -23,8 +23,7 @@ deploy_backend:
   image: curlimages/curl:latest
   script:
     - echo "Desplegando el backend..."
-    # Ejemplo usando Render webhook, reemplaza con tu URL real:
-    - curl -X POST https://api.render.com/deploy/srv-xxxxxxxxxxxx?key=YOUR_DEPLOY_HOOK
+    - curl -X POST https://api.render.com/deploy/srv-d0rfebbuibrs73d6jus0?key=FLnid_R0ss0
   only:
     - main
   needs:

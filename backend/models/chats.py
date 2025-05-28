@@ -5,4 +5,4 @@ class ChatEntrada(BaseModel):
     user_id: str
     message: str
     response: str
-    message_type: Literal["normal", "system"] = "normal"
+    message_type: Literal["normal", "system", "welcome", "rag"] = "normal"
