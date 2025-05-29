@@ -44,15 +44,10 @@ test_frontend:
 
 deploy_frontend:
   stage: deploy-frontend
-  image: node:20
-  before_script:
-    - cd frontend
-    - npm ci
-    - npm install -g firebase-tools
-    - firebase --version
+  image: curlimages/curl:latest
   script:
-    - npm run build
-    - firebase deploy --token "$FIREBASE_TOKEN"
+    - echo "Llamando al hook de Vercel..."
+    - curl -X POST https://api.vercel.com/v1/integrations/deploy/prj_RAhy8qYxSLH4amhuKYD8Lw0SnXk6/4s3d2zhpx7
   only:
     - main
   needs:
