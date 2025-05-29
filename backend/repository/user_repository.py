@@ -1,4 +1,4 @@
-from database.mongo_client import user_collection
+from backend.database.mongo_client import user_collection
 
 def crear_usuario_si_no_existe(user_id: str):
     if not user_collection.find_one({"user_id": user_id}):

@@ -1,8 +1,8 @@
-from repository.user_repository import obtener_configuracion_temporizador_usuario, actualizar_temporizador_usuario
-from repository.chat_repository import guardar_chat, obtener_historial
-from models.chats import ChatEntrada
-from core.config import tokenizer, model, device
-from utils.token_utils import construir_input_con_historial
+from backend.repository.user_repository import obtener_configuracion_temporizador_usuario, actualizar_temporizador_usuario
+from backend.repository.chat_repository import guardar_chat, obtener_historial
+from backend.models.chats import ChatEntrada
+from backend.core.config import tokenizer, model, device
+from backend.utils.token_utils import construir_input_con_historial
 from fastapi import HTTPException
 
 async def handle_generate_response(request):

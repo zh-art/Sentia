@@ -1,5 +1,5 @@
-from database.mongo_client import chat_collection, user_collection
-from models.chats import ChatEntrada
+from backend.database.mongo_client import chat_collection, user_collection
+from backend.models.chats import ChatEntrada
 from datetime import datetime, timedelta
 
 def actualizar_temporizador(user_id: str, duration_minutes: int):
