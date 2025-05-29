@@ -5,8 +5,8 @@ import MobileMenu from "./MobileMenu";
 import ThemeToggle from "@/app/features/theme/ThemeToggle";
 
 interface NavbarProps {
-  title: string;
-  items: { name: string; url: string }[];
+  title?: string;
+  items?: { name: string; url: string }[];
 }
 
 export default function Navbar(NavbarProps: NavbarProps) {
